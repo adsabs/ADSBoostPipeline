@@ -1,0 +1,24 @@
+{
+  "test_record_info": {
+    "bibcode": "2023TEST...123...G",
+    "scix_id": "scix:TEST-GENERAL-123",
+    "doctype": "article",
+    "classification": []
+  },
+  "doctype_boost": 1.0,
+  "refereed_boost": 1.0,
+  "recency_boost": 1.0,
+  "boost_factor": 1.0,
+  "astronomy_weight": 1.0,
+  "physics_weight": 1.0,
+  "earth_science_weight": 1.0,
+  "planetary_science_weight": 1.0,
+  "heliophysics_weight": 1.0,
+  "general_weight": 1.0,
+  "astronomy_final_boost": 1.0,
+  "physics_final_boost": 1.0,
+  "earth_science_final_boost": 1.0,
+  "planetary_science_final_boost": 1.0,
+  "heliophysics_final_boost": 1.0,
+  "general_final_boost": 1.0
+}

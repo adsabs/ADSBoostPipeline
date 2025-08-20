@@ -1,0 +1,24 @@
+{
+  "test_record_info": {
+    "bibcode": "2022ApJ...931...44P",
+    "scix_id": "scix:75M6-3WST-4DM1",
+    "doctype": "article",
+    "classification": []
+  },
+  "doctype_boost": 1.0,
+  "refereed_boost": 1.0,
+  "recency_boost": 1.0,
+  "boost_factor": 1.0,
+  "astronomy_weight": 1.0,
+  "physics_weight": 0.8200000000000001,
+  "earth_science_weight": 0.09999999999999998,
+  "planetary_science_weight": 0.45999999999999996,
+  "heliophysics_weight": 0.45999999999999996,
+  "general_weight": 0.64,
+  "astronomy_final_boost": 1.0,
+  "physics_final_boost": 0.8200000000000001,
+  "earth_science_final_boost": 0.09999999999999998,
+  "planetary_science_final_boost": 0.45999999999999996,
+  "heliophysics_final_boost": 0.45999999999999996,
+  "general_final_boost": 0.64
+}

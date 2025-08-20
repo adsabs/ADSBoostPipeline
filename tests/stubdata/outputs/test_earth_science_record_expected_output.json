@@ -1,0 +1,24 @@
+{
+  "test_record_info": {
+    "bibcode": "2014CG.....66...40K",
+    "scix_id": "scix:1A5S-QJMN-G29Z",
+    "doctype": "article",
+    "classification": []
+  },
+  "doctype_boost": 1.0,
+  "refereed_boost": 1.0,
+  "recency_boost": 1.0,
+  "boost_factor": 1.0,
+  "astronomy_weight": 0.64,
+  "physics_weight": 1.0,
+  "earth_science_weight": 1.0,
+  "planetary_science_weight": 0.64,
+  "heliophysics_weight": 0.64,
+  "general_weight": 0.8200000000000001,
+  "astronomy_final_boost": 0.64,
+  "physics_final_boost": 1.0,
+  "earth_science_final_boost": 1.0,
+  "planetary_science_final_boost": 0.64,
+  "heliophysics_final_boost": 0.64,
+  "general_final_boost": 0.8200000000000001
+}

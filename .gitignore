@@ -1,0 +1,5 @@
+local_config.py
+Dockerfile
+examples/*
+BeeHive_files/*
+*pycache/*

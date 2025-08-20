@@ -1,0 +1,23 @@
+{
+  "bibcode": "2023TEST...123...G",
+  "scix_id": "scix:TEST-GENERAL-123",
+  "bib_data": {
+    "abstract": "This is a test record with general collection to test the special case where all discipline weights become 1.0.",
+    "author": ["Test Author"],
+    "bibcode": "2023TEST...123...G",
+    "database": ["general"],
+    "date": "2023-01-01T00:00:00.000000Z",
+    "doctype": "article",
+    "pubdate": "2023-01-00",
+    "title": ["Test Record with General Collection"],
+    "year": "2023",
+    "entry_date": "2023-01-15T00:00:00.000000Z"
+  },
+  "metrics": {
+    "bibcode": "2023TEST...123...G",
+    "refereed": true,
+    "citation_num": 0,
+    "status": "active"
+  },
+  "classifications": ["general"]
+}

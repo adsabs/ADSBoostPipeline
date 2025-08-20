@@ -1,0 +1,457 @@
+{
+  "bibcode": "2022ApJ...931...44P",
+  "scix_id": "scix:75M6-3WST-4DM1",
+  "bib_data": {
+    "abstract": "Existing star-forming vs. active galactic nucleus (AGN) classification schemes using optical emission-line diagnostics mostly fail for low-metallicity and/or highly star-forming galaxies, missing AGN in typical z ~ 0 dwarfs. To recover AGN in dwarfs with strong emission lines (SELs), we present a classification scheme optimizing the use of existing optical diagnostics. We use Sloan Digital Sky Survey emission-line catalogs overlapping the volume- and mass-limited REsolved Spectroscopy Of a Local VolumE (RESOLVE) and Environmental COntex (ECO) surveys to determine the AGN percentage in SEL dwarfs. Our photoionization grids show that the [O III]/Hβ versus [S II]/Hα diagram (S II plot) and [O III]/Hβ versus [O I]/Hα diagram (O I plot) are less metallicity sensitive and more successful in identifying dwarf AGN than the popular [O III]/Hβ versus [N II]/Hα diagnostic (N II plot or \"BPT diagram\"). We identify a new category of \"star-forming AGN\" (SF-AGN) classified as star-forming by the N II plot but as AGN by the S II and/or O I plots. Including SF-AGN, we find the z ~ 0 AGN percentage in dwarfs with SELs to be ~3%-16%, far exceeding most previous optical estimates (~1%). The large range in our dwarf AGN percentage reflects differences in spectral fitting methodologies between catalogs. The highly complete nature of RESOLVE and ECO allows us to normalize strong emission-line galaxy statistics to the full galaxy population, reducing the dwarf AGN percentage to ~0.6%-3.0%. The newly identified SF-AGN are mostly gas-rich dwarfs with halo mass <10^11.5 M ⊙, where highly efficient cosmic gas accretion is expected. Almost all SF-AGN also have low metallicities (Z ≲ 0.4 Z ⊙), demonstrating the advantage of our method.",
+    "aff": [
+      "Department of Physics and Astronomy, University of North Carolina at Chapel Hill, Phillips Hall, 120 East Cameron Avenue, Chapel Hill, NC 27599, USA",
+      "Department of Physics and Astronomy, University of North Carolina at Chapel Hill, Phillips Hall, 120 East Cameron Avenue, Chapel Hill, NC 27599, USA",
+      "Physics Department, Elon University, 100 Campus Drive CB 2625, Elon, NC 27244, USA",
+      "Department of Civil, Construction and Environmental Engineering, North Carolina State University 3125 Fitts-Woolard Hall, Raleigh, NC 27606, USA",
+      "Department of Physics and Astronomy, University of North Carolina at Chapel Hill, Phillips Hall, 120 East Cameron Avenue, Chapel Hill, NC 27599, USA",
+      "Department of Physics and Astronomy, University of North Georgia, 3820 Mundy Mill Road, Oakwood GA 30566, USA",
+      "Department of Physics and Astronomy, University of North Carolina at Chapel Hill, Phillips Hall, 120 East Cameron Avenue, Chapel Hill, NC 27599, USA",
+      "Department of Physics, Queensborough Community College, City University of New York, 222-05 56th Avenue, Bayside, NY, 11364, USA; Department of Astrophysics, American Museum of Natural History, Central Park West at 79th Street, New York, NY 10024, USA; Department of Physics, Graduate Center, City University of New York, New York, NY 10016, USA",
+      "Jeremiah Horrocks Institute, University of Central Lancashire, Preston, Lancashire, PR1 2HE, UK"
+    ],
+    "alternate_bibcode": ["2022arXiv220403633P"],
+    "arxiv_class": ["astro-ph.GA"],
+    "author": [
+      "Polimera, Mugdha S.",
+      "Kannappan, Sheila J.",
+      "Richardson, Chris T.",
+      "Bittner, Ashley S.",
+      "Ferguson, Carlynn",
+      "Moffett, Amanda J.",
+      "Eckert, Kathleen D.",
+      "Bellovary, Jillian M.",
+      "Norris, Mark A."
+    ],
+    "author_count": 9,
+    "author_facet": [
+      "Polimera, M",
+      "Kannappan, S",
+      "Richardson, C",
+      "Bittner, A",
+      "Ferguson, C",
+      "Moffett, A",
+      "Eckert, K",
+      "Bellovary, J",
+      "Norris, M"
+    ],
+    "author_facet_hier": [
+      "0/Polimera, M",
+      "1/Polimera, M/Polimera, Mugdha S",
+      "0/Kannappan, S",
+      "1/Kannappan, S/Kannappan, Sheila J",
+      "0/Richardson, C",
+      "1/Richardson, C/Richardson, Chris T",
+      "0/Bittner, A",
+      "1/Bittner, A/Bittner, Ashley S",
+      "0/Ferguson, C",
+      "1/Ferguson, C/Ferguson, Carlynn",
+      "0/Moffett, A",
+      "1/Moffett, A/Moffett, Amanda J",
+      "0/Eckert, K",
+      "1/Eckert, K/Eckert, Kathleen D",
+      "0/Bellovary, J",
+      "1/Bellovary, J/Bellovary, Jillian M",
+      "0/Norris, M",
+      "1/Norris, M/Norris, Mark A"
+    ],
+    "author_norm": [
+      "Polimera, M",
+      "Kannappan, S",
+      "Richardson, C",
+      "Bittner, A",
+      "Ferguson, C",
+      "Moffett, A",
+      "Eckert, K",
+      "Bellovary, J",
+      "Norris, M"
+    ],
+    "bibcode": "2022ApJ...931...44P",
+    "bibgroup": ["Chandra/CSC", "NOIRLab", "Chandra"],
+    "bibgroup_facet": ["Chandra/CSC", "NOIRLab", "Chandra"],
+    "bibstem": ["ApJ", "ApJ...931"],
+    "bibstem_facet": "ApJ",
+    "database": ["astronomy"],
+    "date": "2022-05-01T00:00:00.000000Z",
+    "doctype": "article",
+    "doctype_facet_hier": ["0/Article", "1/Article/Journal Article"],
+    "doi": [
+      "10.3847/1538-4357/ac6595",
+      "10.48550/arXiv.2204.03633"
+    ],
+    "eid": "44",
+    "email": [
+      "mugpol@live.unc.edu",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-"
+    ],
+    "first_author": "Polimera, Mugdha S.",
+    "first_author_facet_hier": [
+      "0/Polimera, M",
+      "1/Polimera, M/Polimera, Mugdha S"
+    ],
+    "first_author_norm": "Polimera, M",
+    "id": "30517130",
+    "identifier": [
+      "10.48550/arXiv.2204.03633",
+      "2022arXiv220403633P",
+      "2022ApJ...931...44P",
+      "10.3847/1538-4357/ac6595",
+      "arXiv:2204.03633"
+    ],
+    "issn": ["0004-637X"],
+    "issue": "1",
+    "keyword": [
+      "Galaxies",
+      "AGN host galaxies",
+      "Dwarf galaxies",
+      "Surveys",
+      "Galaxy spectroscopy",
+      "573",
+      "2017",
+      "416",
+      "1671",
+      "2171",
+      "Astrophysics - Astrophysics of Galaxies"
+    ],
+    "keyword_facet": [
+      "galaxies",
+      "galaxies dwarf",
+      "surveys"
+    ],
+    "keyword_norm": [
+      "galaxies",
+      "-",
+      "galaxies dwarf",
+      "surveys",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-",
+      "-"
+    ],
+    "keyword_schema": [
+      "Astronomy",
+      "Astronomy",
+      "Astronomy",
+      "Astronomy",
+      "Astronomy",
+      "UAT",
+      "UAT",
+      "UAT",
+      "UAT",
+      "UAT",
+      "arXiv"
+    ],
+    "links_data": [
+      "{\"access\": \"open\", \"instances\": \"\", \"title\": \"\", \"type\": \"preprint\", \"url\": \"http://arxiv.org/abs/2204.03633\"}",
+      "{\"access\": \"open\", \"instances\": \"\", \"title\": \"\", \"type\": \"electr\", \"url\": \"https://doi.org/10.3847/1538-4357/ac6595\"}",
+      "{\"access\": \"\", \"instances\": \"1\", \"title\": \"\", \"type\": \"simbad\", \"url\": \"http://$SIMBAD$/simbo.pl?bibcode=2022ApJ...931...44P\"}",
+      "{\"access\": \"open\", \"instances\": \"\", \"title\": \"\", \"type\": \"pdf\", \"url\": \"https://iopscience.iop.org/article/10.3847/1538-4357/ac6595/pdf\"}",
+      "{\"access\": \"\", \"instances\": \"IRSA References (WISE)\", \"title\": \"\", \"type\": \"data\", \"url\": \"https://irsa.ipac.caltech.edu/bibdata/2022/P/2022ApJ...931...44P.html\"}"
+    ],
+    "orcid_pub": [
+      "0000-0001-6162-3963",
+      "0000-0002-3378-6551",
+      "0000-0002-3703-0719",
+      "0000-0003-0402-6702",
+      "-",
+      "-",
+      "0000-0002-1407-4700",
+      "0000-0001-7596-8372",
+      "0000-0002-7001-805X"
+    ],
+    "page": ["44"],
+    "pub": "The Astrophysical Journal",
+    "pubnote": [
+      "31 pages, 16 figures, 3 tables. Accepted by ApJ on April 3 2022; doi:10.3847/1538-4357/ac6595"
+    ],
+    "pub_raw": "The Astrophysical Journal, Volume 931, Issue 1, id.44, <NUMPAGES>23</NUMPAGES> pp.",
+    "pubdate": "2022-05-00",
+    "title": [
+      "RESOLVE and ECO: Finding Low-metallicity z ~ 0 Dwarf AGN Candidates Using Optimized Emission-line Diagnostics"
+    ],
+    "volume": "931",
+    "year": "2022",
+    "page_count": 23,
+    "entry_date": "2022-05-29T00:00:00.000000Z"
+  },
+  "metrics": {
+    "bibcode": "2022ApJ...931...44P",
+    "an_citations": 7.5,
+    "an_refereed_citations": 6.25,
+    "author_num": 9,
+    "citation_num": 30,
+    "citations": [
+      "2022ApJ...937....7S",
+      "2022MNRAS.516.2112K",
+      "2023ApJ...946...51C",
+      "2023MNRAS.518..724S",
+      "2023MNRAS.520.3916D",
+      "2023MNRAS.525.2668S",
+      "2023arXiv231112118A",
+      "2024ApJ...960...13G",
+      "2024ApJ...962...95M",
+      "2024ApJ...966L..30M",
+      "2024ApJ...968...18C",
+      "2024ApJ...974...14S",
+      "2024ApJ...975...60A",
+      "2024ApJ...976...22K",
+      "2024ApJ...976..118G",
+      "2024MNRAS.528.5252M",
+      "2024SCPMA..6709811L",
+      "2024arXiv240800666A",
+      "2024arXiv240913047L",
+      "2025A&A...695A..31L",
+      "2025ApJ...978...70G",
+      "2025ApJ...978...77B",
+      "2025ApJ...982...10P",
+      "2025ApJ...985...25C",
+      "2025ApJ...985..228H",
+      "2025ApJ...985..253M",
+      "2025ApJ...986..208B",
+      "2025MNRAS.540.1928K",
+      "2025arXiv250507749R",
+      "2025arXiv250609143S"
+    ],
+    "downloads": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      139, 55, 61, 29
+    ],
+    "modtime": "2025-08-18T07:50:40.388728Z",
+    "reads": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      242, 127, 120, 60
+    ],
+    "refereed": true,
+    "refereed_citation_num": 25,
+    "refereed_citations": [
+      "2022ApJ...937....7S",
+      "2022MNRAS.516.2112K",
+      "2023ApJ...946...51C",
+      "2023MNRAS.518..724S",
+      "2023MNRAS.520.3916D",
+      "2023MNRAS.525.2668S",
+      "2024ApJ...960...13G",
+      "2024ApJ...962...95M",
+      "2024ApJ...966L..30M",
+      "2024ApJ...968...18C",
+      "2024ApJ...974...14S",
+      "2024ApJ...975...60A",
+      "2024ApJ...976...22K",
+      "2024ApJ...976..118G",
+      "2024MNRAS.528.5252M",
+      "2024SCPMA..6709811L",
+      "2025A&A...695A..31L",
+      "2025ApJ...978...70G",
+      "2025ApJ...978...77B",
+      "2025ApJ...982...10P",
+      "2025ApJ...985...25C",
+      "2025ApJ...985..228H",
+      "2025ApJ...985..253M",
+      "2025ApJ...986..208B",
+      "2025MNRAS.540.1928K"
+    ],
+    "reference_num": 135,
+    "rn_citations": 0.2522556,
+    "rn_citation_data": [
+      {
+        "bibcode": "2022ApJ...937....7S",
+        "auth_norm": 0.11111111,
+        "cityear": 2022,
+        "pubyear": 2022,
+        "ref_norm": 0.01
+      },
+      {
+        "bibcode": "2022MNRAS.516.2112K",
+        "auth_norm": 0.11111111,
+        "cityear": 2022,
+        "pubyear": 2022,
+        "ref_norm": 0.0047393367
+      },
+      {
+        "bibcode": "2023ApJ...946...51C",
+        "auth_norm": 0.11111111,
+        "cityear": 2023,
+        "pubyear": 2022,
+        "ref_norm": 0.010869565
+      },
+      {
+        "bibcode": "2023MNRAS.518..724S",
+        "auth_norm": 0.11111111,
+        "cityear": 2023,
+        "pubyear": 2022,
+        "ref_norm": 0.0065789474
+      },
+      {
+        "bibcode": "2023MNRAS.520.3916D",
+        "auth_norm": 0.11111111,
+        "cityear": 2023,
+        "pubyear": 2022,
+        "ref_norm": 0.022222223
+      },
+      {
+        "bibcode": "2023MNRAS.525.2668S",
+        "auth_norm": 0.11111111,
+        "cityear": 2023,
+        "pubyear": 2022,
+        "ref_norm": 0.0060975607
+      },
+      {
+        "bibcode": "2023arXiv231112118A",
+        "auth_norm": 0.11111111,
+        "cityear": 2023,
+        "pubyear": 2022,
+        "ref_norm": 0.0020703934
+      },
+      {
+        "bibcode": "2024ApJ...960...13G",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.006060606
+      },
+      {
+        "bibcode": "2024ApJ...962...95M",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.006024096
+      },
+      {
+        "bibcode": "2024ApJ...966L..30M",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.008333334
+      },
+      {
+        "bibcode": "2024ApJ...968...18C",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.011111111
+      },
+      {
+        "bibcode": "2024ApJ...974...14S",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.01010101
+      },
+      {
+        "bibcode": "2024ApJ...975...60A",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.006451613
+      },
+      {
+        "bibcode": "2024ApJ...976...22K",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.01010101
+      },
+      {
+        "bibcode": "2024ApJ...976..118G",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.0070921984
+      },
+      {
+        "bibcode": "2024MNRAS.528.5252M",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.00729927
+      },
+      {
+        "bibcode": "2024SCPMA..6709811L",
+        "auth_norm": 0.11111111,
+        "cityear": 2024,
+        "pubyear": 2022,
+        "ref_norm": 0.010638298
+      },
+      {
+        "bibcode": "2025A&A...695A..31L",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.010638298
+      },
+      {
+        "bibcode": "2025ApJ...978...70G",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.0067114094
+      },
+      {
+        "bibcode": "2025ApJ...978...77B",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.004651163
+      },
+      {
+        "bibcode": "2025ApJ...982...10P",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.006329114
+      },
+      {
+        "bibcode": "2025ApJ...985...25C",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.015873017
+      },
+      {
+        "bibcode": "2025ApJ...985..228H",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.007352941
+      },
+      {
+        "bibcode": "2025ApJ...985..253M",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.006849315
+      },
+      {
+        "bibcode": "2025ApJ...986..208B",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.010204081
+      },
+      {
+        "bibcode": "2025MNRAS.540.1928K",
+        "auth_norm": 0.11111111,
+        "cityear": 2025,
+        "pubyear": 2022,
+        "ref_norm": 0.004201681
+      }
+    ],
+    "rn_citations_hist": {},
+    "status": "active"
+  },
+  "classifications": ["astronomy"]
+}
