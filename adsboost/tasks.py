@@ -59,6 +59,9 @@ def task_compute_boost_factors(record_data):
     try:
         logger.info(f"Computing boost factors for {record_data.get('bibcode', record_data.get('scix_id'))}")
         boost_factors = app.compute_boost_factors(record_data)
+
+        task_store_boost_factors(bibcode, scix_id, boost_factors)
+        
         return boost_factors
     except Exception as e:
         logger.error(f"Error computing boost factors: {e}")
@@ -143,7 +146,6 @@ def task_export_boost_factors(output_path, bibcodes=None, scix_ids=None):
         logger.error(f"Error exporting boost factors: {e}")
         raise
 
-@app.task(queue='store-boost')
 def task_store_boost_factors(bibcode, scix_id, boost_factors):
     """Store computed boost factors in database"""
     try:
