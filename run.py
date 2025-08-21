@@ -202,9 +202,7 @@ def main():
         elif args.export:
             export_boost_factors(args.export)
         else:
-            # Start the pipeline in listening mode
-            logger.info("Starting Boost Pipeline in listening mode...")
-            app.start()
+            logger.info("No arguments provided. Starting Boost Pipeline in listening mode...")
             
     except KeyboardInterrupt:
         logger.info("Shutting down Boost Pipeline...")
