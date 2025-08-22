@@ -9,9 +9,12 @@ import math
 import adsboost.models as models
 from adsputils import get_date, ADSCelery, u2asc
 from contextlib import contextmanager
-from sqlalchemy import create_engine, desc, or_
+from sqlalchemy import create_engine, desc, or_, and_
 from sqlalchemy.orm import scoped_session, sessionmaker
 from adsputils import load_config, setup_logging
+from adsmsg import BoostResponseRecord
+from google.protobuf.json_format import ParseDict
+
 
 proj_home = os.path.realpath(os.path.join(os.path.dirname(__file__), "../"))
 config = load_config(proj_home=proj_home)
@@ -33,7 +36,14 @@ class ADSBoostCelery(ADSCelery):
         Handles incoming message payload from Master Pipeline
         """
         try:
-            parsed_message = json.loads(message)
+            # Handle both JSON strings and already parsed dictionaries
+            if isinstance(message, str):
+                parsed_message = json.loads(message)
+            elif isinstance(message, dict):
+                parsed_message = message
+            else:
+                raise ValueError(f"Message must be a string or dict, got {type(message)}")
+                
             logger.info("Processing record from Master Pipeline")
             self.process_boost_request(parsed_message)
                 
@@ -48,21 +58,19 @@ class ADSBoostCelery(ADSCelery):
         :param request: Dictionary containing record information
         """
         try:
-            # Extract fields from the new message format
-            bibcode = request.get('bibcode')
-            if not bibcode and 'bib_data' in request:
-                bibcode = request['bib_data'].get('bibcode', '')
+            # Parse JSON strings from the message format sent by Master Pipeline
+            parsed_request = self._parse_master_pipeline_message(request)
             
-            scix_id = request.get('scix_id')
-            if not scix_id and 'bib_data' in request:
-                scix_id = request['bib_data'].get('scix_id', '')
+            # Extract fields from the parsed message
+            bibcode = parsed_request.get('bibcode')
+            scix_id = parsed_request.get('scix_id')
             
             if not bibcode:
                 logger.error("No bibcode provided in request")
                 return
                 
-            # Compute boost factors
-            boost_factors = self.compute_boost_factors(request)
+            # Compute boost factors using parsed data
+            boost_factors = self.compute_final_boost(parsed_request)
             
             # Store in database
             self.store_boost_factors(bibcode, scix_id, boost_factors)
@@ -73,6 +81,82 @@ class ADSBoostCelery(ADSCelery):
         except Exception as e:
             logger.error(f"Error processing boost request: {e}")
             raise
+
+    def _parse_master_pipeline_message(self, request):
+        """
+        Parse the message format sent from Master Pipeline
+        
+        :param request: Raw request from Master Pipeline
+        :return: Parsed request with decoded JSON fields
+        """
+        try:
+            parsed = request.copy()
+            
+            # Parse bib_data if it's a JSON string
+            if 'bib_data' in parsed and isinstance(parsed['bib_data'], str):
+                try:
+                    parsed['bib_data'] = json.loads(parsed['bib_data'])
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse bib_data JSON: {e}")
+                    parsed['bib_data'] = {}
+            elif 'bib_data' not in parsed:
+                parsed['bib_data'] = {}
+            
+            # Parse metrics if it's a JSON string
+            if 'metrics' in parsed and isinstance(parsed['metrics'], str):
+                try:
+                    parsed['metrics'] = json.loads(parsed['metrics'])
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse metrics JSON: {e}")
+                    parsed['metrics'] = {}
+            elif 'metrics' not in parsed:
+                parsed['metrics'] = {}
+            
+            # Ensure classifications is a list
+            if 'classifications' in parsed and not isinstance(parsed['classifications'], list):
+                if isinstance(parsed['classifications'], str) and parsed['classifications']:
+                    parsed['classifications'] = [parsed['classifications']]
+                elif parsed['classifications']:
+                    parsed['classifications'] = list(parsed['classifications'])
+                else:
+                    parsed['classifications'] = []
+            elif 'classifications' not in parsed:
+                parsed['classifications'] = []
+            
+            # Ensure collections is a list
+            if 'collections' in parsed and not isinstance(parsed['collections'], list):
+                if isinstance(parsed['collections'], str) and parsed['collections']:
+                    parsed['collections'] = [parsed['collections']]
+                elif parsed['collections']:
+                    parsed['collections'] = list(parsed['collections'])
+                else:
+                    parsed['collections'] = []
+            elif 'collections' not in parsed:
+                parsed['collections'] = []
+            
+            # Ensure required fields exist
+            if 'bibcode' not in parsed:
+                parsed['bibcode'] = ''
+            if 'scix_id' not in parsed:
+                parsed['scix_id'] = ''
+            if 'status' not in parsed:
+                parsed['status'] = 'unknown'
+            
+            logger.debug(f"Parsed message structure: {list(parsed.keys())}")
+            return parsed
+            
+        except Exception as e:
+            logger.error(f"Error parsing master pipeline message: {e}")
+            # Return a safe default structure
+            return {
+                'bibcode': request.get('bibcode', ''),
+                'scix_id': request.get('scix_id', ''),
+                'status': 'error',
+                'bib_data': {},
+                'metrics': {},
+                'classifications': [],
+                'collections': []
+            }
 
     def compute_refereed_boost(self, record):
         """
@@ -85,10 +169,15 @@ class ADSBoostCelery(ADSCelery):
         :return: Float boost factor (1.0 for refereed, 0.0 for non-refereed)
         """
         # Check metrics section first, then bib_data section
-        if 'metrics' in record and record['metrics'].get('refereed', False):
-            return 1.0
-        elif 'bib_data' in record and record['bib_data'].get('refereed', False):
-            return 1.0
+        # Note: These fields are now properly parsed from JSON strings
+        if 'metrics' in record and isinstance(record['metrics'], dict):
+            if record['metrics'].get('refereed', False):
+                return 1.0
+        
+        if 'bib_data' in record and isinstance(record['bib_data'], dict):
+            if record['bib_data'].get('refereed', False):
+                return 1.0
+        
         return 0.0
 
     def compute_doctype_boost(self, record):
@@ -270,20 +359,28 @@ class ADSBoostCelery(ADSCelery):
         
         return collection_weights
 
-    def compute_final_boost(self, boost_factors, record):
+    def compute_final_boost(self, record):
         """
-        Compute final boost factors for each discipline using the simplified algorithm:
-        1. Compute single boost_factor as weighted average of doctype, refereed, and recency
-        2. Compute discipline final boosts as discipline_weight * boost_factor
+        Compute all boost factors for a record using the simplified algorithm:
+        1. Compute individual boost factors (refereed, doctype, recency)
+        2. Compute single boost_factor as weighted average of the three basic boosts
+        3. Compute collection weights
+        4. Compute discipline final boosts as discipline_weight * boost_factor
         
-        :param boost_factors: Dictionary of individual boost factors
-        :param record: Dictionary containing record information
-        :return: Dictionary with discipline-specific final boosts
+        :param record: Dictionary containing record information (already parsed)
+        :return: Dictionary with all computed boost factors including final boosts
         """
-        # Step 4: Compute boost_factor as weighted average of doctype, refereed, and recency
-        weights = self.config.get('BOOST_FACTOR_WEIGHTS', {})
+        # Step 1: Compute individual boost factors
+        boost_factors = {
+            'refereed_boost': self.compute_refereed_boost(record),
+            'doctype_boost': self.compute_doctype_boost(record),
+            'recency_boost': self.compute_recency_boost(record)
+        }
+        
+        # Step 2: Compute boost_factor as weighted average of doctype, refereed, and recency
+        weights = self.config.get('BOOST_WEIGHTS', {})
         if not weights:
-            logger.warning("No BOOST_FACTOR_WEIGHTS found in config, using default weights")
+            logger.warning("No BOOST_WEIGHTS found in config, using default weights")
             weights = {
                 'refereed_boost': 0.6,
                 'doctype_boost': 0.4,
@@ -303,70 +400,26 @@ class ADSBoostCelery(ADSCelery):
             # Fallback to simple average if weights are all 0
             boost_factor = sum(boost_factors.values()) / len(boost_factors)
         
-        # Step 5: Compute all discipline final boosts as discipline_weight * boost_factor
+        # Step 3: Compute collection weights
         collection_weights = self.compute_collection_weights(record)
+        
+        # Step 4: Compute all discipline final boosts as discipline_weight * boost_factor
         collections = self.config.get('COLLECTIONS', ['astronomy', 'physics', 'earth_science', 'planetary_science', 'heliophysics', 'general'])
         
         final_boosts = {}
         for collection in collections:
             final_boosts[f'{collection}_final_boost'] = collection_weights[f'{collection}_weight'] * boost_factor
         
-        return final_boosts
+        # Combine all results into one dictionary
+        result = {}
+        result.update(boost_factors)  # Individual boost factors
+        result.update(collection_weights)  # Collection weights
+        result.update(final_boosts)  # Final discipline boosts
+        result['boost_factor'] = boost_factor  # Overall boost factor
+        
+        return result
 
-    def compute_boost_factors(self, record):
-        """
-        Compute all boost factors for a record
-        
-        Compute refereed_boost, doctype_boost, recency_boost, discipline_boosts, 
-        and final_boosts
-        Combine all boost scores to make discipline-specific "relevance scores"
-        
-        :param record: Dictionary containing record information
-        :return: Dictionary with computed boost factors
-        """
-        # Extract bibcode and scix_id for logging
-        bibcode = record.get('bibcode')
-        if not bibcode and 'bib_data' in record:
-            bibcode = record['bib_data'].get('bibcode')
-        
-        scix_id = record.get('scix_id')
-        if not scix_id and 'bib_data' in record:
-            scix_id = record['bib_data'].get('scix_id')
-        
-        logger.debug(f"Computing boost factors for record: {bibcode}")
-        
-        # Compute individual boost factors
-        boost_factors = {
-            'refereed_boost': self.compute_refereed_boost(record),
-            'doctype_boost': self.compute_doctype_boost(record),
-            'recency_boost': self.compute_recency_boost(record)
-        }
-        
-        # Compute boost_factor as weighted average of the three basic boosts
-        weights = self.config.get('BOOST_FACTOR_WEIGHTS', {})
-        
-        # Normalize weights
-        total_weight = sum(weights.values())
-        normalized_weights = {k: v/total_weight for k, v in weights.items()}
-        
-        boost_factor = (
-            boost_factors['refereed_boost'] * normalized_weights['refereed_boost'] +
-            boost_factors['doctype_boost'] * normalized_weights['doctype_boost'] +
-            boost_factors['recency_boost'] * normalized_weights['recency_boost']
-        )
-        
-        boost_factors['boost_factor'] = boost_factor
-        
-        # Compute collection weights
-        collection_weights = self.compute_collection_weights(record)
-        boost_factors.update(collection_weights)
-        
-        # Compute final boost factors using simplified algorithm
-        final_boosts = self.compute_final_boost(boost_factors, record)
-        boost_factors.update(final_boosts)
-        
-        logger.debug(f"Computed boost factors: {boost_factors}")
-        return boost_factors
+
 
     def store_boost_factors(self, bibcode, scix_id, boost_factors):
         """
@@ -451,40 +504,42 @@ class ADSBoostCelery(ADSCelery):
         :param boost_factors: Computed boost factors
         """
         try:
-            # Extract bibcode and scix_id from the new message format
-            bibcode = original_record.get('bibcode')
-            if not bibcode and 'bib_data' in original_record:
-                bibcode = original_record['bib_data'].get('bibcode')
+            # Parse the original record to get access to parsed data
+            parsed_record = self._parse_master_pipeline_message(original_record)
             
-            scix_id = original_record.get('scix_id')
-            if not scix_id and 'bib_data' in original_record:
-                scix_id = original_record['bib_data'].get('scix_id')
+            # Extract bibcode and scix_id from the parsed message
+            bibcode = parsed_record.get('bibcode')
+            scix_id = parsed_record.get('scix_id')
             
-            # Prepare message for Master Pipeline
+            if not bibcode:
+                logger.error("No bibcode found in parsed record for sending to master pipeline")
+                return
+            
+            # Create response message with boost factors
             message = {
                 'bibcode': bibcode,
                 'scix_id': scix_id,
-                'boosts': {
-                    'doctype_boost': boost_factors.get('doctype_boost', 0.0),
-                    'refereed_boost': boost_factors.get('refereed_boost', 0.0),
-                    'recency_boost': boost_factors.get('recency_boost', 0.0),
-                    'boost_factor': boost_factors.get('boost_factor', 0.0),
-                    'astronomy_final_boost': boost_factors.get('astronomy_final_boost', 0.0),
-                    'physics_final_boost': boost_factors.get('physics_final_boost', 0.0),
-                    'earth_science_final_boost': boost_factors.get('earth_science_final_boost', 0.0),
-                    'planetary_science_final_boost': boost_factors.get('planetary_science_final_boost', 0.0),
-                    'heliophysics_final_boost': boost_factors.get('heliophysics_final_boost', 0.0),
-                    'general_final_boost': boost_factors.get('general_final_boost', 0.0)
-                },
-                'timestamp': get_date().isoformat()
+                'status': 3,  # Use enum value 3 for updated
+                'doctype_boost': boost_factors.get('doctype_boost', 0.0),
+                'refereed_boost': boost_factors.get('refereed_boost', 0.0),
+                'recency_boost': boost_factors.get('recency_boost', 0.0),
+                'boost_factor': boost_factors.get('boost_factor', 0.0),
+                'astronomy_final_boost': boost_factors.get('astronomy_final_boost', 0.0),
+                'physics_final_boost': boost_factors.get('physics_final_boost', 0.0),
+                'earth_science_final_boost': boost_factors.get('earth_science_final_boost', 0.0),
+                'planetary_science_final_boost': boost_factors.get('planetary_science_final_boost', 0.0),
+                'heliophysics_final_boost': boost_factors.get('heliophysics_final_boost', 0.0),
+                'general_final_boost': boost_factors.get('general_final_boost', 0.0),
+                'created': boost_factors.get('created', datetime.now().isoformat()),
+                'modified': boost_factors.get('modified', datetime.now().isoformat())
             }
-            
+            protobuf_format = BoostResponseRecord()
+            response_message = ParseDict(message, protobuf_format)
+            logger.info(f"Response message: {response_message}")
+            logger.info(f"Response message type: {type(response_message)}")
+
             # Send to Master Pipeline
-            self.send_message(
-                message=json.dumps(message),
-                        broker=self.config.get('OUTPUT_CELERY_BROKER'),
-        task_name=self.config.get('OUTPUT_TASKNAME')
-            )
+            self.forward_message(response_message)
             
             logger.info(f"Sent boost factors to Master Pipeline for {bibcode}")
             

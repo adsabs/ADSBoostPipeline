@@ -4,18 +4,15 @@ API_URL = "https://api.adsabs.harvard.edu/v1" # ADS API URL
 API_TOKEN = ''
 
 # Celery configuration
-CELERY_INCLUDE = ["ADSBoostPipeline.tasks"]
-CELERY_BROKER = "pyamqp://test:test@localhost:5682/boost_pipeline"
+CELERY_INCLUDE = ["adsboost.tasks"]
+CELERY_BROKER = "pyamqp://guest:guest@rabbitmq-broker-1:5672/boost_pipeline"
 
-OUTPUT_CELERY_BROKER = "pyamqp://test:test@localhost:5682/master_pipeline" 
+OUTPUT_CELERY_BROKER = "pyamqp://guest:guest@rabbitmq-broker-1:5672/master_pipeline" 
 OUTPUT_TASKNAME = "adsmp.tasks.task_update_record"
 
 # Logging configuration
 LOGGING_LEVEL = 'INFO'
 LOG_STDOUT = True
-
-# Database configuration
-DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/boostfactorsdb'
 
 # set to True adds .delay() or .apply_async() to the end of each task
 # set to False for direct function calls
@@ -76,11 +73,6 @@ BOOST_WEIGHTS = {
     'recency_boost': 0.0
 }
 
-# Boost factor weights for computing discipline-specific boosts
-BOOST_FACTOR_WEIGHTS = {
-    'refereed_boost': 0.4,
-    'doctype_boost': 0.6
-}
 
 # Collection rankings for determining relative relevance weights
 # Each collection defines how relevant other collections are to it using integer ranks

@@ -67,7 +67,7 @@ def query_boost_factors(app, query_id, logger):
         
         if results:
             for result in results:
-                logger.info(f"Boost factors retrived for {query_id}:")
+                logger.info(f"Boost factors retrieved for {query_id}:")
         else:
             logger.info(f"No boost factors found for {query_id}")
             

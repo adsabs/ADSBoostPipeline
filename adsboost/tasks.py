@@ -5,6 +5,7 @@ import json
 import logging
 from adsputils import load_config, setup_logging
 from adsboost import app as app_module
+from kombu import Queue
 # ============================= INITIALIZATION ==================================== #
 
 # Setup logging
@@ -16,9 +17,8 @@ app = app_module.ADSBoostCelery('boost-pipeline', proj_home=proj_home,
 logger = app.logger
 
 app.conf.CELERY_QUEUES = (
-    Queue('boost-request', app.exchange, routing_key='boost-request'),
+    Queue('update-record', app.exchange, routing_key='update-record'),
     Queue('compute-boost', app.exchange, routing_key='compute-boost'),
-    Queue('store-boost', app.exchange, routing_key='store-boost'),
     Queue('send-boost-response', app.exchange, routing_key='send-boost-response'),
     Queue('export-boost', app.exchange, routing_key='export-boost'),
 
@@ -29,8 +29,8 @@ app.conf.CELERY_QUEUES = (
 
 
 
-@app.task(queue='boost-request')
-def task_process_boost_request_message(message):
+@app.task(queue='update-record')
+def task_process_boost_request_message(message, pipeline='boost'):
     """
     Process a boost request message from the Master Pipeline
     
@@ -58,10 +58,15 @@ def task_compute_boost_factors(record_data):
     """
     try:
         logger.info(f"Computing boost factors for {record_data.get('bibcode', record_data.get('scix_id'))}")
-        boost_factors = app.compute_boost_factors(record_data)
+        boost_factors = app.compute_final_boost(record_data)
 
-        task_store_boost_factors(bibcode, scix_id, boost_factors)
+        # Extract bibcode and scix_id from record_data
+        bibcode = record_data.get('bibcode')
+        scix_id = record_data.get('scix_id')
         
+        if bibcode or scix_id:
+            task_store_boost_factors(bibcode, scix_id, boost_factors)
+            
         return boost_factors
     except Exception as e:
         logger.error(f"Error computing boost factors: {e}")

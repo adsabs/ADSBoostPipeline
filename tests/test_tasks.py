@@ -102,17 +102,17 @@ class TestTasks:
     def test_task_compute_boost_factors_success(self, sample_record, sample_boost_factors):
         """Test successful computation of boost factors"""
         with patch('adsboost.tasks.app') as mock_app:
-            mock_app.compute_boost_factors.return_value = sample_boost_factors
+            mock_app.compute_final_boost.return_value = sample_boost_factors
             
             result = task_compute_boost_factors(sample_record)
             
             assert result == sample_boost_factors
-            mock_app.compute_boost_factors.assert_called_once_with(sample_record)
+            mock_app.compute_final_boost.assert_called_once_with(sample_record)
     
     def test_task_compute_boost_factors_error(self, sample_record):
         """Test error handling in boost factor computation"""
         with patch('adsboost.tasks.app') as mock_app:
-            mock_app.compute_boost_factors.side_effect = Exception("Computation error")
+            mock_app.compute_final_boost.side_effect = Exception("Computation error")
             
             with pytest.raises(Exception, match="Computation error"):
                 task_compute_boost_factors(sample_record)
@@ -281,7 +281,7 @@ class TestTasks:
         
         with patch('adsboost.tasks.app') as mock_app:
             # Mock all app methods
-            mock_app.compute_boost_factors.return_value = sample_boost_factors
+            mock_app.compute_final_boost.return_value = sample_boost_factors
             mock_app.store_boost_factors.return_value = None
             mock_app.send_to_master_pipeline.return_value = None
             mock_app.query_boost_factors.return_value = [{

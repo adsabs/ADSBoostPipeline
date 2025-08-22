@@ -1,8 +1,7 @@
-adsputils>=1.0.0
+adsputils==1.5.13
 celery==4.4.2
-sqlalchemy>=1.4.0
-psycopg2-binary>=2.9.0
-alembic>=1.7.0
-pytest>=6.0.0
-pytest-cov>=2.0.0
+sqlalchemy==1.4.50
+psycopg2-binary==2.9.10
+alembic==1.14.1
 requests>=2.25.0 
+protobuf==3.17.3

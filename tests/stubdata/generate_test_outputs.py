@@ -29,7 +29,7 @@ def generate_output_for_input(input_file_path, output_dir):
     
     try:
         # Compute boost factors
-        result = app.compute_boost_factors(input_data)
+        result = app.compute_final_boost(input_data)
         
         # Extract test record info for reference
         test_record_info = {

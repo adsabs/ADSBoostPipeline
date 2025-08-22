@@ -46,13 +46,13 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run basic function tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_boost_factors with: {test_case['name']}")
+            print(f"\nTesting compute_final_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
                 test_record = json.load(f)
             
-            boost_factors = app.compute_boost_factors(test_record)
+            boost_factors = app.compute_final_boost(test_record)
             
             # Check that all required fields are present
             required_fields = [
@@ -259,8 +259,7 @@ class TestAppFunctions:
                 test_record = json.load(f)
             
             # Test with actual test data
-            boost_factors = app.compute_boost_factors(test_record)
-            final_boosts = app.compute_final_boost(boost_factors, test_record)
+            final_boosts = app.compute_final_boost(test_record)
             
             required_final_fields = [
                 'astronomy_final_boost', 'physics_final_boost', 'earth_science_final_boost',
@@ -288,7 +287,7 @@ class TestAppFunctions:
             "classifications": {"database": ["astronomy"]}
         }
         
-        final_boosts = app.compute_final_boost(minimal_boost_factors, minimal_record)
+        final_boosts = app.compute_final_boost(minimal_record)
         
         for field in required_final_fields:
             assert field in final_boosts, f"Missing final boost field: {field}"
@@ -316,7 +315,7 @@ class TestAppFunctions:
                 expected_output = json.load(f)
             
             # Run the boost pipeline
-            actual_output = app.compute_boost_factors(test_record)
+            actual_output = app.compute_final_boost(test_record)
             
             # Test record info for reference
             print(f"  Test Record: {expected_output['test_record_info']['bibcode']}")

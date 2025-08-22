@@ -1,8 +1,8 @@
-"""Create boost_factors table
+"""Adding Boost Factors Table
 
-Revision ID: 001
-Revises: 
-Create Date: 2024-01-01 00:00:00.000000
+Revision ID: f1f47bab2274
+Revises:
+Create Date: 2025-08-22 16:38:35.919085
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '001'
+revision = 'f1f47bab2274'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,6 +23,7 @@ def upgrade():
         sa.Column('bibcode', sa.String(length=19), nullable=True, index=True),
         sa.Column('scix_id', sa.String(length=19), nullable=True, index=True),
         sa.Column('created', sa.DateTime(), nullable=True),
+        sa.Column('modified', sa.DateTime(), nullable=True),
         
         # Basic boost factors
         sa.Column('refereed_boost', sa.Float(), nullable=True),
