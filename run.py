@@ -86,10 +86,10 @@ def export_boost_factors(app, output_path, logger):
             fieldnames = [
                 'bibcode', 'scix_id', 'created',
                 'doctype_boost', 'refereed_boost', 'recency_boost', 'boost_factor',
-                'astronomy_weight', 'physics_weight', 'earth_science_weight',
-                'planetary_science_weight', 'heliophysics_weight', 'general_weight',
-                'astronomy_final_boost', 'physics_final_boost', 'earth_science_final_boost',
-                'planetary_science_final_boost', 'heliophysics_final_boost', 'general_final_boost'
+                'astrophysics_weight', 'physics_weight', 'earthscience_weight',
+                'planetary_weight', 'heliophysics_weight', 'general_weight',
+                'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+                'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost'
             ]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -106,16 +106,16 @@ def export_boost_factors(app, output_path, logger):
                         'refereed_boost': record.refereed_boost,
                         'recency_boost': record.recency_boost,
                         'boost_factor': record.boost_factor,
-                        'astronomy_weight': record.astronomy_weight,
+                        'astrophysics_weight': record.astrophysics_weight,
                         'physics_weight': record.physics_weight,
-                        'earth_science_weight': record.earth_science_weight,
-                        'planetary_science_weight': record.planetary_science_weight,
+                        'earthscience_weight': record.earthscience_weight,
+                        'planetary_weight': record.planetary_weight,
                         'heliophysics_weight': record.heliophysics_weight,
                         'general_weight': record.general_weight,
-                        'astronomy_final_boost': record.astronomy_final_boost,
+                        'astrophysics_final_boost': record.astrophysics_final_boost,
                         'physics_final_boost': record.physics_final_boost,
-                        'earth_science_final_boost': record.earth_science_final_boost,
-                        'planetary_science_final_boost': record.planetary_science_final_boost,
+                        'earthscience_final_boost': record.earthscience_final_boost,
+                        'planetary_final_boost': record.planetary_final_boost,
                         'heliophysics_final_boost': record.heliophysics_final_boost,
                         'general_final_boost': record.general_final_boost
                     }

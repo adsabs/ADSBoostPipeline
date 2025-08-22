@@ -16,6 +16,15 @@ from adsboost.tasks import (
     task_send_to_master_pipeline
 )
 from adsboost.app import ADSBoostCelery
+from adsputils import load_config, setup_logging
+
+# ============================= INITIALIZATION ==================================== #
+proj_home = os.path.realpath(os.path.dirname(__file__))
+config = load_config(proj_home=proj_home)
+
+logger = setup_logging('test_tasks.py', proj_home=proj_home,
+                       level=config.get('LOGGING_LEVEL', 'DEBUG'),
+                       attach_stdout=config.get('LOG_STDOUT', False))
 
 class TestTasks:
     """Test all functionality of tasks.py"""
@@ -63,16 +72,16 @@ class TestTasks:
             'refereed_boost': 1.0,
             'recency_boost': 0.8,
             'boost_factor': 0.933,
-            'astronomy_weight': 1.0,
+            'astrophysics_weight': 1.0,
             'physics_weight': 0.64,
-            'earth_science_weight': 0.1,
-            'planetary_science_weight': 0.46,
+            'earthscience_weight': 0.1,
+            'planetary_weight': 0.46,
             'heliophysics_weight': 0.28,
             'general_weight': 0.64,
-            'astronomy_final_boost': 0.933,
+            'astrophysics_final_boost': 0.933,
             'physics_final_boost': 0.597,
-            'earth_science_final_boost': 0.093,
-            'planetary_science_final_boost': 0.429,
+            'earthscience_final_boost': 0.093,
+            'planetary_final_boost': 0.429,
             'heliophysics_final_boost': 0.261,
             'general_final_boost': 0.597
         }
@@ -207,16 +216,16 @@ class TestTasks:
             mock_record.refereed_boost = 1.0
             mock_record.recency_boost = 0.8
             mock_record.boost_factor = 0.933
-            mock_record.astronomy_weight = 1.0
+            mock_record.astrophysics_weight = 1.0
             mock_record.physics_weight = 0.64
-            mock_record.earth_science_weight = 0.1
-            mock_record.planetary_science_weight = 0.46
+            mock_record.earthscience_weight = 0.1
+            mock_record.planetary_weight = 0.46
             mock_record.heliophysics_weight = 0.28
             mock_record.general_weight = 0.64
-            mock_record.astronomy_final_boost = 0.933
+            mock_record.astrophysics_final_boost = 0.933
             mock_record.physics_final_boost = 0.597
-            mock_record.earth_science_final_boost = 0.093
-            mock_record.planetary_science_final_boost = 0.429
+            mock_record.earthscience_final_boost = 0.093
+            mock_record.planetary_final_boost = 0.429
             mock_record.heliophysics_final_boost = 0.261
             mock_record.general_final_boost = 0.597
             mock_record.created = None
