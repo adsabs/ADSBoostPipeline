@@ -294,30 +294,24 @@ class ADSBoostCelery(ADSCelery):
             raw_values = record['bib_data'].get('database')
 
         if isinstance(raw_values, list):
-            record_collections = [str(v).lower().replace(' ', '_') for v in raw_values if v]
+            record_collections = [str(v).lower().replace(' ', '') for v in raw_values if v]
         elif isinstance(raw_values, str) and raw_values:
-            record_collections = [raw_values.lower().replace(' ', '_')]
+            record_collections = [raw_values.lower().replace(' ', '')]
+
+        if 'astronomy' in record_collections:
+            record_collections.remove('astronomy')
+            record_collections.append('astrophysics')
 
         if not record_collections:
             record_collections = ['general']
             is_default_general = True
-        
-        # Map new collection names to database column names
-        collection_mapping = {
-            'astrophysics': 'astronomy',
-            'earthscience': 'earth_science', 
-            'planetary': 'planetary_science',
-            'physics': 'physics',
-            'heliophysics': 'heliophysics',
-            'general': 'general'
-        }
         
         # Get ranking configuration from config
         collection_rankings = self.config.get('COLLECTION_RANKINGS', {})
         if not collection_rankings:
             logger.warning("No COLLECTION_RANKINGS found in config, using default weights")
             collections = self.config.get('COLLECTIONS', ['astrophysics', 'physics', 'earthscience', 'planetary', 'heliophysics', 'general'])
-            return {f'{collection_mapping[collection]}_weight': 1.0 for collection in collections}
+            return {f'{collection}_weight': 1.0 for collection in collections}
         
         collections = self.config.get('COLLECTIONS', ['astrophysics', 'physics', 'earthscience', 'planetary', 'heliophysics', 'general'])
         
@@ -332,16 +326,16 @@ class ADSBoostCelery(ADSCelery):
             return {f'{collection}_weight': 1.0 for collection in collections}
         
         # Sort ranks and create rank-to-weight mapping
-        # Weights are evenly distributed from 1.0 (highest rank = highest relevance) to 0.1 (lowest rank = lowest relevance)
+        # Weights are evenly distributed from 1.0 (lowest rank = highest relevance) to 0.1 (highest rank = lowest relevance)
         # This ensures even the lowest relevance gets a small positive weight
-        sorted_ranks = sorted(all_ranks, reverse=True)  # Highest rank first (highest relevance)
+        sorted_ranks = sorted(all_ranks)  # Lowest rank first (highest relevance)
         rank_to_weight = {}
         for i, rank in enumerate(sorted_ranks):
             if len(sorted_ranks) == 1:
                 # Only one rank, give it weight 1.0
                 rank_to_weight[rank] = 1.0
             else:
-                # Distribute weights evenly from 1.0 (highest rank) to 0.1 (lowest rank)
+                # Distribute weights evenly from 1.0 (lowest rank = highest relevance) to 0.1 (highest rank = lowest relevance)
                 # This ensures even the lowest relevance gets a small positive weight
                 weight = 1.0 - (0.9 * i / (len(sorted_ranks) - 1))
                 rank_to_weight[rank] = weight
@@ -352,8 +346,7 @@ class ADSBoostCelery(ADSCelery):
         # Special case: if record explicitly has 'general' collection, all disciplines get weight 1.0
         if 'general' in record_collections:
             for discipline in collections:
-                db_collection = collection_mapping[discipline]
-                collection_weights[f'{db_collection}_weight'] = 1.0
+                collection_weights[f'{discipline}_weight'] = 1.0
             return collection_weights
 
         for discipline in collections:
@@ -366,9 +359,8 @@ class ADSBoostCelery(ADSCelery):
                     weight = rank_to_weight.get(rank, 0.0)
                     max_weight = max(max_weight, weight)
             
-            # Map the collection name to the database column name
-            db_collection = collection_mapping[discipline]
-            collection_weights[f'{db_collection}_weight'] = max_weight
+            # Use discipline name directly as column name
+            collection_weights[f'{discipline}_weight'] = max_weight
         
         return collection_weights
 
@@ -417,24 +409,13 @@ class ADSBoostCelery(ADSCelery):
         collection_weights = self.compute_collection_weights(record)
         
         # Step 4: Compute all discipline final boosts as discipline_weight * boost_factor
-        # Map new collection names to database column names
-        collection_mapping = {
-            'astrophysics': 'astronomy',
-            'earthscience': 'earth_science', 
-            'planetary': 'planetary_science',
-            'physics': 'physics',
-            'heliophysics': 'heliophysics',
-            'general': 'general'
-        }
-        
         collections = self.config.get('COLLECTIONS', ['astrophysics', 'physics', 'earthscience', \
             'planetary', 'heliophysics', 'general'])
             
         final_boosts = {}
         for collection in collections:
-            # Map the collection name to the database column name
-            db_collection = collection_mapping[collection]
-            final_boosts[f'{collection}_final_boost'] = collection_weights[f'{db_collection}_weight'] * boost_factor
+            # Use collection name directly as column name
+            final_boosts[f'{collection}_final_boost'] = collection_weights[f'{collection}_weight'] * boost_factor
         
         # Combine all results into one dictionary
         result = {}
@@ -472,18 +453,18 @@ class ADSBoostCelery(ADSCelery):
                     existing_record.recency_boost = boost_factors['recency_boost']
                     
                     # Update collection weights
-                    existing_record.astronomy_weight = boost_factors.get('astronomy_weight')
+                    existing_record.astrophysics_weight = boost_factors.get('astrophysics_weight')
                     existing_record.physics_weight = boost_factors.get('physics_weight')
-                    existing_record.earth_science_weight = boost_factors.get('earth_science_weight')
-                    existing_record.planetary_science_weight = boost_factors.get('planetary_science_weight')
+                    existing_record.earthscience_weight = boost_factors.get('earthscience_weight')
+                    existing_record.planetary_weight = boost_factors.get('planetary_weight')
                     existing_record.heliophysics_weight = boost_factors.get('heliophysics_weight')
                     existing_record.general_weight = boost_factors.get('general_weight')
                     
                     # Update discipline-specific final boosts
-                    existing_record.astronomy_final_boost = boost_factors.get('astronomy_final_boost')
+                    existing_record.astrophysics_final_boost = boost_factors.get('astrophysics_final_boost')
                     existing_record.physics_final_boost = boost_factors.get('physics_final_boost')
-                    existing_record.earth_science_final_boost = boost_factors.get('earth_science_final_boost')
-                    existing_record.planetary_science_final_boost = boost_factors.get('planetary_science_final_boost')
+                    existing_record.earthscience_final_boost = boost_factors.get('earthscience_final_boost')
+                    existing_record.planetary_final_boost = boost_factors.get('planetary_final_boost')
                     existing_record.heliophysics_final_boost = boost_factors.get('heliophysics_final_boost')
                     existing_record.general_final_boost = boost_factors.get('general_final_boost')
                     
@@ -498,18 +479,18 @@ class ADSBoostCelery(ADSCelery):
                         recency_boost=boost_factors['recency_boost'],
                         
                         # Collection weights
-                        astronomy_weight=boost_factors.get('astronomy_weight'),
+                        astrophysics_weight=boost_factors.get('astrophysics_weight'),
                         physics_weight=boost_factors.get('physics_weight'),
-                        earth_science_weight=boost_factors.get('earth_science_weight'),
-                        planetary_science_weight=boost_factors.get('planetary_science_weight'),
+                        earthscience_weight=boost_factors.get('earthscience_weight'),
+                        planetary_weight=boost_factors.get('planetary_weight'),
                         heliophysics_weight=boost_factors.get('heliophysics_weight'),
                         general_weight=boost_factors.get('general_weight'),
                         
                         # Discipline-specific final boosts
-                        astronomy_final_boost=boost_factors.get('astronomy_final_boost'),
+                        astrophysics_final_boost=boost_factors.get('astrophysics_final_boost'),
                         physics_final_boost=boost_factors.get('physics_final_boost'),
-                        earth_science_final_boost=boost_factors.get('earth_science_final_boost'),
-                        planetary_science_final_boost=boost_factors.get('planetary_science_final_boost'),
+                        earthscience_final_boost=boost_factors.get('earthscience_final_boost'),
+                        planetary_final_boost=boost_factors.get('planetary_final_boost'),
                         heliophysics_final_boost=boost_factors.get('heliophysics_final_boost'),
                         general_final_boost=boost_factors.get('general_final_boost')
                     )
@@ -550,10 +531,10 @@ class ADSBoostCelery(ADSCelery):
                 'refereed_boost': boost_factors.get('refereed_boost', 0.0),
                 'recency_boost': boost_factors.get('recency_boost', 0.0),
                 'boost_factor': boost_factors.get('boost_factor', 0.0),
-                'astronomy_final_boost': boost_factors.get('astronomy_final_boost', 0.0),
+                'astronomy_final_boost': boost_factors.get('astrophysics_final_boost', 0.0),
                 'physics_final_boost': boost_factors.get('physics_final_boost', 0.0),
-                'earth_science_final_boost': boost_factors.get('earth_science_final_boost', 0.0),
-                'planetary_science_final_boost': boost_factors.get('planetary_science_final_boost', 0.0),
+                'earth_science_final_boost': boost_factors.get('earthscience_final_boost', 0.0),
+                'planetary_science_final_boost': boost_factors.get('planetary_final_boost', 0.0),
                 'heliophysics_final_boost': boost_factors.get('heliophysics_final_boost', 0.0),
                 'general_final_boost': boost_factors.get('general_final_boost', 0.0),
                 'created': boost_factors.get('created', datetime.now().isoformat()),
@@ -602,18 +583,18 @@ class ADSBoostCelery(ADSCelery):
                         'recency_boost': record.recency_boost,
                         
                         # Collection weights
-                        'astronomy_weight': record.astronomy_weight,
+                        'astrophysics_weight': record.astrophysics_weight,
                         'physics_weight': record.physics_weight,
-                        'earth_science_weight': record.earth_science_weight,
-                        'planetary_science_weight': record.planetary_science_weight,
+                        'earthscience_weight': record.earthscience_weight,
+                        'planetary_weight': record.planetary_weight,
                         'heliophysics_weight': record.heliophysics_weight,
                         'general_weight': record.general_weight,
                         
                         # Discipline-specific final boosts
-                        'astronomy_final_boost': record.astronomy_final_boost,
+                        'astrophysics_final_boost': record.astrophysics_final_boost,
                         'physics_final_boost': record.physics_final_boost,
-                        'earth_science_final_boost': record.earth_science_final_boost,
-                        'planetary_science_final_boost': record.planetary_science_final_boost,
+                        'earthscience_final_boost': record.earthscience_final_boost,
+                        'planetary_final_boost': record.planetary_final_boost,
                         'heliophysics_final_boost': record.heliophysics_final_boost,
                         'general_final_boost': record.general_final_boost,
                         

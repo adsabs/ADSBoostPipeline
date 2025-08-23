@@ -6,6 +6,14 @@ import json
 import os
 from datetime import datetime
 from adsboost.app import ADSBoostCelery
+from adsputils import load_config, setup_logging
+# ============================= INITIALIZATION ==================================== #
+proj_home = os.path.realpath(os.path.dirname(__file__))
+config = load_config(proj_home=proj_home)
+
+logger = setup_logging('run.py', proj_home=proj_home,
+                       level=config.get('LOGGING_LEVEL', 'DEBUG'),
+                       attach_stdout=config.get('LOG_STDOUT', False))
 
 class TestAppFunctions:
     """Test all functions in app.py using static input/output files"""
@@ -46,7 +54,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run basic function tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_final_boost with: {test_case['name']}")
+            logger.info(f"\nTesting compute_final_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -57,10 +65,10 @@ class TestAppFunctions:
             # Check that all required fields are present
             required_fields = [
                 'refereed_boost', 'doctype_boost', 'recency_boost', 'boost_factor',
-                'astronomy_weight', 'physics_weight', 'earth_science_weight',
-                'planetary_science_weight', 'heliophysics_weight', 'general_weight',
-                'astronomy_final_boost', 'physics_final_boost', 'earth_science_final_boost',
-                'planetary_science_final_boost', 'heliophysics_final_boost', 'general_final_boost'
+                'astrophysics_weight', 'physics_weight', 'earthscience_weight',
+                'planetary_weight', 'heliophysics_weight', 'general_weight',
+                'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+                'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost'
             ]
             
             for field in required_fields:
@@ -68,9 +76,9 @@ class TestAppFunctions:
                 assert isinstance(boost_factors[field], (int, float)), f"Field {field} should be numeric in {test_case['name']}"
                 assert boost_factors[field] >= 0, f"Field {field} should be non-negative in {test_case['name']}"
             
-            print(f"  ✅ {test_case['name']} - All required fields present and valid")
+            logger.info(f"   {test_case['name']} - All required fields present and valid")
         
-        print(f"\nAll {len(test_files)} test records passed basic boost factor computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed basic boost factor computation!")
     
     def test_compute_refereed_boost(self, app):
         """Test refereed boost computation using ALL test records"""
@@ -79,7 +87,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run refereed boost tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_refereed_boost with: {test_case['name']}")
+            logger.info(f"\nTesting compute_refereed_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -88,12 +96,12 @@ class TestAppFunctions:
             # Test with actual test data
             boost = app.compute_refereed_boost(test_record)
             assert boost in [0.0, 1.0], f"Refereed boost should be 0.0 or 1.0, got {boost} in {test_case['name']}"
-            print(f"  ✅ {test_case['name']} - Refereed boost: {boost}")
+            logger.info(f"   {test_case['name']} - Refereed boost: {boost}")
         
-        print(f"\nAll {len(test_files)} test records passed refereed boost computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed refereed boost computation!")
         
         # Test edge cases with minimal records
-        print("\nTesting edge cases with minimal records:")
+        logger.info("\nTesting edge cases with minimal records:")
         
         # Test refereed record
         refereed_record = {
@@ -102,7 +110,7 @@ class TestAppFunctions:
         }
         boost = app.compute_refereed_boost(refereed_record)
         assert boost == 1.0
-        print("  ✅ Minimal refereed record (metrics precedence)")
+        logger.info("   Minimal refereed record (metrics precedence)")
         
         # Test non-refereed record
         non_refereed_record = {
@@ -111,7 +119,7 @@ class TestAppFunctions:
         }
         boost = app.compute_refereed_boost(non_refereed_record)
         assert boost == 0.0
-        print("  ✅ Minimal non-refereed record")
+        logger.info("   Minimal non-refereed record")
         
         # Test record with only bib_data
         bib_data_record = {
@@ -119,7 +127,7 @@ class TestAppFunctions:
         }
         boost = app.compute_refereed_boost(bib_data_record)
         assert boost == 1.0
-        print("  ✅ Record with only bib_data")
+        logger.info("   Record with only bib_data")
     
     def test_compute_doctype_boost(self, app):
         """Test document type boost computation using ALL test records"""
@@ -128,7 +136,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run doctype boost tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_doctype_boost with: {test_case['name']}")
+            logger.info(f"\nTesting compute_doctype_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -138,19 +146,19 @@ class TestAppFunctions:
             boost = app.compute_doctype_boost(test_record)
             assert isinstance(boost, (int, float)), f"Doctype boost should be numeric in {test_case['name']}"
             assert boost >= 0, f"Doctype boost should be non-negative in {test_case['name']}"
-            print(f"  ✅ {test_case['name']} - Doctype boost: {boost}")
+            logger.info(f"   {test_case['name']} - Doctype boost: {boost}")
         
-        print(f"\nAll {len(test_files)} test records passed doctype boost computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed doctype boost computation!")
         
         # Test edge case with minimal record
-        print("\nTesting edge case with minimal record:")
+        logger.info("\nTesting edge case with minimal record:")
         minimal_record = {
             "bib_data": {"doctype": "article"}
         }
         boost = app.compute_doctype_boost(minimal_record)
         assert isinstance(boost, (int, float))
         assert boost >= 0
-        print("  ✅ Minimal record with doctype")
+        logger.info("   Minimal record with doctype")
     
     def test_compute_recency_boost(self, app):
         """Test recency boost computation using ALL test records"""
@@ -159,7 +167,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run recency boost tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_recency_boost with: {test_case['name']}")
+            logger.info(f"\nTesting compute_recency_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -169,12 +177,12 @@ class TestAppFunctions:
             boost = app.compute_recency_boost(test_record)
             assert isinstance(boost, (int, float)), f"Recency boost should be numeric in {test_case['name']}"
             assert boost > 0, f"Recency boost should be positive in {test_case['name']}"
-            print(f"  ✅ {test_case['name']} - Recency boost: {boost}")
+            logger.info(f"   {test_case['name']} - Recency boost: {boost}")
         
-        print(f"\nAll {len(test_files)} test records passed recency boost computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed recency boost computation!")
         
         # Test edge cases with specific dates
-        print("\nTesting edge cases with specific dates:")
+        logger.info("\nTesting edge cases with specific dates:")
         
         # Test recent record
         recent_record = {
@@ -186,7 +194,7 @@ class TestAppFunctions:
         boost = app.compute_recency_boost(recent_record)
         assert isinstance(boost, (int, float))
         assert boost > 0
-        print("  ✅ Recent record (2024)")
+        logger.info("   Recent record (2024)")
         
         # Test old record (should return 1.0 after 24 months)
         old_record = {
@@ -197,7 +205,7 @@ class TestAppFunctions:
         }
         boost = app.compute_recency_boost(old_record)
         assert boost == 1.0
-        print("  ✅ Old record (2020) - should return 1.0")
+        logger.info("   Old record (2020) - should return 1.0")
     
     def test_compute_collection_weights(self, app):
         """Test collection weight computation using ALL test records"""
@@ -206,7 +214,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run collection weight tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_collection_weights with: {test_case['name']}")
+            logger.info(f"\nTesting compute_collection_weights with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -216,8 +224,8 @@ class TestAppFunctions:
             weights = app.compute_collection_weights(test_record)
             
             required_weight_fields = [
-                'astronomy_weight', 'physics_weight', 'earth_science_weight',
-                'planetary_science_weight', 'heliophysics_weight', 'general_weight'
+                'astrophysics_weight', 'physics_weight', 'earthscience_weight',
+                'planetary_weight', 'heliophysics_weight', 'general_weight'
             ]
             
             for field in required_weight_fields:
@@ -225,12 +233,12 @@ class TestAppFunctions:
                 assert isinstance(weights[field], (int, float)), f"Weight {field} should be numeric in {test_case['name']}"
                 assert 0 <= weights[field] <= 1, f"Weight {field} should be between 0 and 1 in {test_case['name']}"
             
-            print(f"  ✅ {test_case['name']} - All collection weights valid")
+            logger.info(f"   {test_case['name']} - All collection weights valid")
         
-        print(f"\nAll {len(test_files)} test records passed collection weight computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed collection weight computation!")
         
         # Test edge case with minimal record
-        print("\nTesting edge case with minimal record:")
+        logger.info("\nTesting edge case with minimal record:")
         astronomy_record = {
             "classifications": {"database": ["astronomy"]}
         }
@@ -241,9 +249,9 @@ class TestAppFunctions:
             assert isinstance(weights[field], (int, float)), f"Weight {field} should be numeric"
             assert 0 <= weights[field] <= 1, f"Weight {field} should be between 0 and 1"
         
-        # Astronomy should have highest weight for astronomy record
-        assert weights['astronomy_weight'] >= weights['physics_weight']
-        print("  ✅ Minimal astronomy record - weights computed correctly")
+        # Astrophysics should have highest weight for astrophysics record
+        assert weights['astrophysics_weight'] >= weights['physics_weight']
+        logger.info("   Minimal astrophysics record - weights computed correctly")
     
     def test_compute_final_boost(self, app):
         """Test final boost computation using ALL test records"""
@@ -252,7 +260,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - cannot run final boost tests")
         
         for test_case in test_files:
-            print(f"\nTesting compute_final_boost with: {test_case['name']}")
+            logger.info(f"\nTesting compute_final_boost with: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -262,8 +270,8 @@ class TestAppFunctions:
             final_boosts = app.compute_final_boost(test_record)
             
             required_final_fields = [
-                'astronomy_final_boost', 'physics_final_boost', 'earth_science_final_boost',
-                'planetary_science_final_boost', 'heliophysics_final_boost', 'general_final_boost'
+                'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+                'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost'
             ]
             
             for field in required_final_fields:
@@ -271,12 +279,12 @@ class TestAppFunctions:
                 assert isinstance(final_boosts[field], (int, float)), f"Final boost {field} should be numeric in {test_case['name']}"
                 assert final_boosts[field] >= 0, f"Final boost {field} should be non-negative in {test_case['name']}"
             
-            print(f"  ✅ {test_case['name']} - All final boosts computed correctly")
+            logger.info(f"   {test_case['name']} - All final boosts computed correctly")
         
-        print(f"\nAll {len(test_files)} test records passed final boost computation!")
+        logger.info(f"\nAll {len(test_files)} test records passed final boost computation!")
         
         # Test edge case with minimal data
-        print("\nTesting edge case with minimal data:")
+        logger.info("\nTesting edge case with minimal data:")
         minimal_boost_factors = {
             'refereed_boost': 1.0,
             'doctype_boost': 0.8,
@@ -294,7 +302,7 @@ class TestAppFunctions:
             assert isinstance(final_boosts[field], (int, float)), f"Final boost {field} should be numeric"
             assert final_boosts[field] >= 0, f"Final boost {field} should be non-negative"
         
-        print("  ✅ Minimal data - final boosts computed correctly")
+        logger.info("   Minimal data - final boosts computed correctly")
     
     def test_boost_pipeline_outputs(self, app):
         """Test that the boost pipeline produces expected outputs for all test records"""
@@ -304,7 +312,7 @@ class TestAppFunctions:
             pytest.skip("No test files found - skipping file-based tests")
         
         for test_case in test_files:
-            print(f"\nTesting: {test_case['name']}")
+            logger.info(f"\nTesting: {test_case['name']}")
             
             # Load test record
             with open(test_case['input'], 'r') as f:
@@ -318,8 +326,8 @@ class TestAppFunctions:
             actual_output = app.compute_final_boost(test_record)
             
             # Test record info for reference
-            print(f"  Test Record: {expected_output['test_record_info']['bibcode']}")
-            print(f"     Doctype: {expected_output['test_record_info']['doctype']}")
+            logger.info(f"  Test Record: {expected_output['test_record_info']['bibcode']}")
+            logger.info(f"     Doctype: {expected_output['test_record_info']['doctype']}")
             # Display collections from classifications.database (primary) or bib_data.database (fallback)
             collections = []
             if 'classifications' in test_record and 'database' in test_record['classifications']:
@@ -327,37 +335,37 @@ class TestAppFunctions:
             elif 'bib_data' in test_record and 'database' in test_record['bib_data']:
                 collections = test_record['bib_data']['database']
             
-            print(f"     Collections: {collections if collections else 'None'}")
+            logger.info(f"     Collections: {collections if collections else 'None'}")
             
             # Compare basic boost factors
-            print("  Basic Boost Factors:")
+            logger.info("  Basic Boost Factors:")
             for field in ['doctype_boost', 'refereed_boost', 'recency_boost', 'boost_factor']:
                 expected = expected_output[field]
                 actual = actual_output[field]
                 assert abs(actual - expected) < 0.001, f"{field}: expected {expected}, got {actual}"
-                print(f"     {field}: {actual} ✓")
+                logger.info(f"     {field}: {actual} ✓")
             
             # Compare collection weights
-            print("  Collection Weights:")
-            for field in ['astronomy_weight', 'physics_weight', 'earth_science_weight', 
-                         'planetary_science_weight', 'heliophysics_weight', 'general_weight']:
+            logger.info("  Collection Weights:")
+            for field in ['astrophysics_weight', 'physics_weight', 'earthscience_weight', 
+                         'planetary_weight', 'heliophysics_weight', 'general_weight']:
                 expected = expected_output[field]
                 actual = actual_output[field]
                 assert abs(actual - expected) < 0.001, f"{field}: expected {expected}, got {actual}"
-                print(f"     {field}: {actual} ✓")
+                logger.info(f"     {field}: {actual} ✓")
             
             # Compare final discipline boosts
-            print("  Final Discipline Boosts:")
-            for field in ['astronomy_final_boost', 'physics_final_boost', 'earth_science_final_boost',
-                         'planetary_science_final_boost', 'heliophysics_final_boost', 'general_final_boost']:
+            logger.info("  Final Discipline Boosts:")
+            for field in ['astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+                         'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost']:
                 expected = expected_output[field]
                 actual = actual_output[field]
                 assert abs(actual - expected) < 0.001, f"{field}: expected {expected}, got {actual}"
-                print(f"     {field}: {actual} ✓")
+                logger.info(f"     {field}: {actual} ✓")
             
-            print(f"  ✅ {test_case['name']} - All tests passed!")
+            logger.info(f"   {test_case['name']} - All tests passed!")
         
-        print(f"\nAll {len(test_files)} test cases passed successfully!")
+        logger.info(f"\nAll {len(test_files)} test cases passed successfully!")
     
     def test_query_boost_factors(self, app):
         """Test querying boost factors"""
