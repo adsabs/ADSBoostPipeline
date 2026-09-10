@@ -1,11 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import os
+import csv
 import json
 import logging
 from adsputils import load_config, setup_logging
 from adsboost import app as app_module
+from adsboost import models
 from kombu import Queue
+
+# Column order for the CSV export
+EXPORT_FIELDNAMES = [
+    'bibcode', 'scix_id',
+    'doctype_boost', 'refereed_boost', 'recency_boost', 'boost_factor',
+    'astrophysics_weight', 'physics_weight', 'earthscience_weight',
+    'planetary_weight', 'heliophysics_weight', 'general_weight',
+    'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+    'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost',
+    'created'
+]
 # ============================= INITIALIZATION ==================================== #
 
 # Setup logging
@@ -99,54 +112,33 @@ def task_export_boost_factors(output_path, bibcodes=None, scix_ids=None):
     """
     try:
         logger.debug(f"Exporting boost factors to {output_path}")
-        
-        # Prepare output file
-        app.prepare_output_file(output_path)
-        
-        # Query all records if no specific IDs provided
-        if not bibcodes and not scix_ids:
-            with app.session_scope() as session:
-                records = session.query(app.models.BoostFactors).all()
-                for record in records:
-                    record_dict = {
-                        'bibcode': record.bibcode,
-                        'scix_id': record.scix_id,
-                        'doctype_boost': record.doctype_boost,
-                        'refereed_boost': record.refereed_boost,
-                        'recency_boost': record.recency_boost,
-                        'boost_factor': record.boost_factor,
-                        'astronomy_weight': record.astronomy_weight,
-                        'physics_weight': record.physics_weight,
-                        'earth_science_weight': record.earth_science_weight,
-                        'planetary_science_weight': record.planetary_science_weight,
-                        'heliophysics_weight': record.heliophysics_weight,
-                        'general_weight': record.general_weight,
-                        'astronomy_final_boost': record.astronomy_final_boost,
-                        'physics_final_boost': record.physics_final_boost,
-                        'earth_science_final_boost': record.earth_science_final_boost,
-                        'planetary_science_final_boost': record.planetary_science_final_boost,
-                        'heliophysics_final_boost': record.heliophysics_final_boost,
-                        'general_final_boost': record.general_final_boost,
-                        'created': record.created.isoformat() if record.created else None
-                    }
-                    app.add_record_to_output_file(record_dict, output_path)
-        else:
-            # Query specific records
-            if bibcodes:
-                for bibcode in bibcodes:
-                    results = app.query_boost_factors(bibcode=bibcode)
-                    for result in results:
-                        app.add_record_to_output_file(result, output_path)
-            
-            if scix_ids:
-                for scix_id in scix_ids:
-                    results = app.query_boost_factors(scix_id=scix_id)
-                    for result in results:
-                        app.add_record_to_output_file(result, output_path)
-        
+
+        with open(output_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=EXPORT_FIELDNAMES,
+                                    extrasaction='ignore')
+            writer.writeheader()
+
+            # Query all records if no specific IDs provided
+            if not bibcodes and not scix_ids:
+                with app.session_scope() as session:
+                    for record in session.query(models.BoostFactors).all():
+                        row = {field: getattr(record, field)
+                               for field in EXPORT_FIELDNAMES if field != 'created'}
+                        row['created'] = record.created.isoformat() if record.created else None
+                        writer.writerow(row)
+            else:
+                # Query specific records
+                for bibcode in bibcodes or []:
+                    for result in app.query_boost_factors(bibcode=bibcode):
+                        writer.writerow(result)
+
+                for scix_id in scix_ids or []:
+                    for result in app.query_boost_factors(scix_id=scix_id):
+                        writer.writerow(result)
+
         logger.debug(f"Successfully exported boost factors to {output_path}")
         return {"status": "success", "output_path": output_path}
-        
+
     except Exception as e:
         logger.error(f"Error exporting boost factors: {e}")
         raise
