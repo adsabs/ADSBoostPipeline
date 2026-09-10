@@ -130,6 +130,21 @@ COLLECTION_RANKINGS = {
     }
 }
 
+# Collection hierarchy: 'astronomy' is an umbrella that encompasses these more
+# specific collections. When a record carries the umbrella AND one or more of its
+# subcollections, the subcollections win and the umbrella is dropped. An umbrella
+# on its own falls back to the first subcollection listed.
+COLLECTION_HIERARCHY = {
+    'astronomy': ['astrophysics', 'heliophysics', 'planetary']
+}
+
+# Alternate spellings seen in bib_data.database and in classifications.
+# Values are compared lowercased with spaces removed, so 'Planetary Science'
+# arrives here as 'planetaryscience'.
+COLLECTION_ALIASES = {
+    'planetaryscience': 'planetary'
+}
+
 # Citation distribution update frequency (in days)
 CITATION_DISTRIBUTION_UPDATE_FREQUENCY = 90  # Quarterly updates
 
