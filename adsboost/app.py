@@ -321,9 +321,7 @@ class ADSBoostCelery(ADSCelery):
                         decoded_request = self._decode_record_fields(request.copy())
                         decoded_requests.append(decoded_request)
                     except Exception as e:
-                        # Index alone is not enough to find the record later.
-                        # bibcode and scix_id are top-level fields and are still
-                        # available here, before bib_data and metrics are decoded.
+                        # Log bibcode and scix_id in case of error .
                         if isinstance(request, dict):
                             bibcode = request.get('bibcode')
                             scix_id = request.get('scix_id')
