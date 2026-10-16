@@ -4,6 +4,7 @@
 import pytest
 import json
 import os
+import csv
 import tempfile
 import shutil
 from unittest.mock import patch, MagicMock
@@ -15,7 +16,7 @@ from adsboost.tasks import (
     task_store_boost_factors,
     task_send_to_master_pipeline
 )
-from adsboost.app import ADSBoostCelery
+from adsboost.app import ADSBoostCelery, config as pipeline_config
 from adsputils import load_config, setup_logging
 
 # ============================= INITIALIZATION ==================================== #
@@ -207,6 +208,7 @@ class TestTasks:
         output_path = "/tmp/test_export.csv"
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             # Mock the session scope and query results
             mock_session = MagicMock()
             mock_record = MagicMock()
@@ -233,15 +235,18 @@ class TestTasks:
             mock_session.query.return_value.all.return_value = [mock_record]
             mock_app.session_scope.return_value.__enter__.return_value = mock_session
             mock_app.session_scope.return_value.__exit__.return_value = None
-            mock_app.prepare_output_file.return_value = None
-            mock_app.add_record_to_output_file.return_value = None
-            
             result = task_export_boost_factors(output_path)
-            
+
             assert result['status'] == 'success'
             assert result['output_path'] == output_path
-            mock_app.prepare_output_file.assert_called_once_with(output_path)
-            mock_app.add_record_to_output_file.assert_called_once()
+
+            # the task writes the csv itself, so check the file
+            with open(output_path) as f:
+                rows = list(csv.DictReader(f))
+            assert len(rows) == 1
+            assert rows[0]['bibcode'] == "2022ApJ...931...44P"
+            assert rows[0]['boost_factor'] == "0.933"
+            assert rows[0]['astrophysics_final_boost'] == "0.933"
     
     def test_task_export_boost_factors_with_specific_bibcodes(self):
         """Test export with specific bibcodes"""
@@ -249,9 +254,8 @@ class TestTasks:
         bibcodes = ["2022ApJ...931...44P"]
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             mock_app.query_boost_factors.return_value = [{"bibcode": "2022ApJ...931...44P"}]
-            mock_app.prepare_output_file.return_value = None
-            mock_app.add_record_to_output_file.return_value = None
             
             result = task_export_boost_factors(output_path, bibcodes=bibcodes)
             
@@ -264,9 +268,8 @@ class TestTasks:
         scix_ids = ["scix:75M6-3WST-4DM1"]
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             mock_app.query_boost_factors.return_value = [{"scix_id": "scix:75M6-3WST-4DM1"}]
-            mock_app.prepare_output_file.return_value = None
-            mock_app.add_record_to_output_file.return_value = None
             
             result = task_export_boost_factors(output_path, scix_ids=scix_ids)
             
@@ -278,8 +281,9 @@ class TestTasks:
         output_path = "/tmp/test_export.csv"
         
         with patch('adsboost.tasks.app') as mock_app:
-            mock_app.prepare_output_file.side_effect = Exception("Export error")
-            
+            mock_app.config.get.side_effect = pipeline_config.get
+            mock_app.session_scope.side_effect = Exception("Export error")
+
             with pytest.raises(Exception, match="Export error"):
                 task_export_boost_factors(output_path)
     

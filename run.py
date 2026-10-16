@@ -8,7 +8,8 @@ import argparse
 import csv
 from adsputils import load_config, setup_logging
 from sqlalchemy.orm import load_only
-import ADSBoost.tasks as tasks
+import adsboost.tasks as tasks
+from adsboost import models
 
 # ============================= INITIALIZATION ==================================== #
 proj_home = os.path.realpath(os.path.dirname(__file__))
@@ -95,7 +96,7 @@ def export_boost_factors(app, output_path, logger):
             writer.writeheader()
             
             with app.session_scope() as session:
-                records = session.query(app.models.BoostFactors).all()
+                records = session.query(models.BoostFactors).all()
                 
                 for record in records:
                     record_dict = {
@@ -200,7 +201,7 @@ def main():
         elif args.query:
             query_boost_factors(args.query)
         elif args.export:
-            export_boost_factors(args.export)
+            export_boost_factors(app, args.export, logger)
         else:
             logger.info("No arguments provided. Starting Boost Pipeline in listening mode...")
             
