@@ -321,7 +321,22 @@ class ADSBoostCelery(ADSCelery):
                         decoded_request = self._decode_record_fields(request.copy())
                         decoded_requests.append(decoded_request)
                     except Exception as e:
-                        logger.error(f"Error decoding record {idx + 1} in boost_requests list: {e}")
+                        # Index alone is not enough to find the record later.
+                        # bibcode and scix_id are top-level fields and are still
+                        # available here, before bib_data and metrics are decoded.
+                        if isinstance(request, dict):
+                            bibcode = request.get('bibcode')
+                            scix_id = request.get('scix_id')
+                            keys = list(request.keys())
+                        else:
+                            bibcode = None
+                            scix_id = None
+                            keys = type(request).__name__
+                        logger.error(
+                            f"Error decoding record {idx + 1}/{len(boost_requests)} "
+                            f"(bibcode={bibcode}, scix_id={scix_id}, keys={keys}): {e}",
+                            exc_info=True,
+                        )
                         # Include the original request even if decoding fails
                         decoded_requests.append(request)
                 
@@ -670,33 +685,6 @@ class ADSBoostCelery(ADSCelery):
         
         return result
 
-
-
-    # Columns written from a boost_factors dict, in model-attribute order. Every
-    # name here is both the BoostFactors column and the compute_final_boost key.
-    BOOST_FACTOR_COLUMNS = (
-        'refereed_boost',
-        'doctype_boost',
-        'recency_boost',
-        'boost_factor',
-
-        # Collection weights
-        'astrophysics_weight',
-        'physics_weight',
-        'earthscience_weight',
-        'planetary_weight',
-        'heliophysics_weight',
-        'general_weight',
-
-        # Discipline-specific final boosts
-        'astrophysics_final_boost',
-        'physics_final_boost',
-        'earthscience_final_boost',
-        'planetary_final_boost',
-        'heliophysics_final_boost',
-        'general_final_boost',
-    )
-
     def _apply_boost_factors(self, record, boost_factors):
         """
         Copy every boost factor value onto a BoostFactors model instance
@@ -704,7 +692,7 @@ class ADSBoostCelery(ADSCelery):
         :param record: models.BoostFactors instance
         :param boost_factors: Dictionary of computed boost factors
         """
-        for column in self.BOOST_FACTOR_COLUMNS:
+        for column in self.config.get('BOOST_FACTOR_COLUMNS'):
             setattr(record, column, boost_factors.get(column))
 
     def store_boost_factors(self, bibcode, scix_id, boost_factors):

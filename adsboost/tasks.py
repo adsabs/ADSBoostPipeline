@@ -9,16 +9,6 @@ from adsboost import app as app_module
 from adsboost import models
 from kombu import Queue
 
-# Column order for the CSV export
-EXPORT_FIELDNAMES = [
-    'bibcode', 'scix_id',
-    'doctype_boost', 'refereed_boost', 'recency_boost', 'boost_factor',
-    'astrophysics_weight', 'physics_weight', 'earthscience_weight',
-    'planetary_weight', 'heliophysics_weight', 'general_weight',
-    'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
-    'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost',
-    'created'
-]
 # ============================= INITIALIZATION ==================================== #
 
 # Setup logging
@@ -112,9 +102,10 @@ def task_export_boost_factors(output_path, bibcodes=None, scix_ids=None):
     """
     try:
         logger.debug(f"Exporting boost factors to {output_path}")
+        export_fieldnames = app.config.get('EXPORT_FIELDNAMES')
 
         with open(output_path, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=EXPORT_FIELDNAMES,
+            writer = csv.DictWriter(csvfile, fieldnames=export_fieldnames,
                                     extrasaction='ignore')
             writer.writeheader()
 
@@ -123,7 +114,7 @@ def task_export_boost_factors(output_path, bibcodes=None, scix_ids=None):
                 with app.session_scope() as session:
                     for record in session.query(models.BoostFactors).all():
                         row = {field: getattr(record, field)
-                               for field in EXPORT_FIELDNAMES if field != 'created'}
+                               for field in export_fieldnames if field != 'created'}
                         row['created'] = record.created.isoformat() if record.created else None
                         writer.writerow(row)
             else:

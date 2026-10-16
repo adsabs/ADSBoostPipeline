@@ -16,7 +16,7 @@ from adsboost.tasks import (
     task_store_boost_factors,
     task_send_to_master_pipeline
 )
-from adsboost.app import ADSBoostCelery
+from adsboost.app import ADSBoostCelery, config as pipeline_config
 from adsputils import load_config, setup_logging
 
 # ============================= INITIALIZATION ==================================== #
@@ -208,6 +208,7 @@ class TestTasks:
         output_path = "/tmp/test_export.csv"
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             # Mock the session scope and query results
             mock_session = MagicMock()
             mock_record = MagicMock()
@@ -253,6 +254,7 @@ class TestTasks:
         bibcodes = ["2022ApJ...931...44P"]
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             mock_app.query_boost_factors.return_value = [{"bibcode": "2022ApJ...931...44P"}]
             
             result = task_export_boost_factors(output_path, bibcodes=bibcodes)
@@ -266,6 +268,7 @@ class TestTasks:
         scix_ids = ["scix:75M6-3WST-4DM1"]
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             mock_app.query_boost_factors.return_value = [{"scix_id": "scix:75M6-3WST-4DM1"}]
             
             result = task_export_boost_factors(output_path, scix_ids=scix_ids)
@@ -278,6 +281,7 @@ class TestTasks:
         output_path = "/tmp/test_export.csv"
         
         with patch('adsboost.tasks.app') as mock_app:
+            mock_app.config.get.side_effect = pipeline_config.get
             mock_app.session_scope.side_effect = Exception("Export error")
 
             with pytest.raises(Exception, match="Export error"):

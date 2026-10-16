@@ -11,6 +11,7 @@ RabbitMQ to send messagesbetween Master Pipeline and Boost Pipeline.
 import pytest
 import json
 import os
+from unittest.mock import patch
 from adsmsg import BoostRequestRecord, BoostRequestRecordList, BoostResponseRecordList
 from adsmsg.protobuf import status_pb2 as Status
 from adsputils.serializer import dumps as adsmsg_dumps, loads as adsmsg_loads
@@ -291,3 +292,25 @@ class TestMessageHandling:
         assert attempts['n'] == 2          # original + exactly one retry
         assert result['failed'] == 1
         assert result['processed'] == len(records) - 1
+
+    def test_decode_error_logs_record_identifiers(self, app):
+        """A failed decode must be traceable by bibcode and scix_id, not only by index"""
+        message = build_request_list([{
+            'bibcode': '2022ApJ...931...44P',
+            'scix_id': 'scix:75M6-3WST-4DM1',
+            'bib_data': {},
+            'metrics': {},
+        }])
+
+        def fail_decode(record_dict):
+            raise ValueError("bad payload")
+
+        app._decode_record_fields = fail_decode
+        with patch('adsboost.app.logger') as mock_logger:
+            result = app._protobuf_to_dict(message)
+
+        assert result['boost_requests'][0]['bibcode'] == '2022ApJ...931...44P'
+        error_message = mock_logger.error.call_args[0][0]
+        assert '2022ApJ...931...44P' in error_message
+        assert 'scix:75M6-3WST-4DM1' in error_message
+        assert mock_logger.error.call_args[1]['exc_info'] is True

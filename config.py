@@ -150,3 +150,39 @@ CITATION_DISTRIBUTION_UPDATE_FREQUENCY = 90  # Quarterly updates
 
 # Collections for citation boost calculations
 COLLECTIONS = ['astrophysics', 'physics', 'earthscience', 'planetary', 'heliophysics', 'general']
+
+# Columns written from a boost_factors dict, in BoostFactors model-attribute order.
+# Every name here is both a BoostFactors column and a compute_final_boost key.
+BOOST_FACTOR_COLUMNS = (
+    'refereed_boost',
+    'doctype_boost',
+    'recency_boost',
+    'boost_factor',
+
+    # Collection weights
+    'astrophysics_weight',
+    'physics_weight',
+    'earthscience_weight',
+    'planetary_weight',
+    'heliophysics_weight',
+    'general_weight',
+
+    # Discipline-specific final boosts
+    'astrophysics_final_boost',
+    'physics_final_boost',
+    'earthscience_final_boost',
+    'planetary_final_boost',
+    'heliophysics_final_boost',
+    'general_final_boost',
+)
+
+# Column order for the CSV export of boost factors
+EXPORT_FIELDNAMES = [
+    'bibcode', 'scix_id',
+    'doctype_boost', 'refereed_boost', 'recency_boost', 'boost_factor',
+    'astrophysics_weight', 'physics_weight', 'earthscience_weight',
+    'planetary_weight', 'heliophysics_weight', 'general_weight',
+    'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
+    'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost',
+    'created'
+]

@@ -58,7 +58,7 @@ class TestStoreBoostFactors:
             record = session.query(models.BoostFactors).filter_by(bibcode=bibcode).first()
             if record is None:
                 return None
-            return {c: getattr(record, c) for c in app.BOOST_FACTOR_COLUMNS}
+            return {c: getattr(record, c) for c in app.config.get('BOOST_FACTOR_COLUMNS')}
 
     def test_boost_factor_column_is_written(self, app):
         """boost_factor is computed and must actually reach the database"""
@@ -74,7 +74,7 @@ class TestStoreBoostFactors:
         app.store_boost_factors('2022ApJ...931...44P', 'scix:AAAA-BBBB-CCCC', factors)
 
         stored = self.fetch(app, '2022ApJ...931...44P')
-        for column in app.BOOST_FACTOR_COLUMNS:
+        for column in app.config.get('BOOST_FACTOR_COLUMNS'):
             assert stored[column] == factors[column], column
 
     def test_batch_inserts_every_record(self, app):
