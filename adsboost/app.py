@@ -510,9 +510,9 @@ class ADSBoostCelery(ADSCelery):
 
         'astronomy' encompasses astrophysics, heliophysics and planetary. When a
         record carries the umbrella together with one or more of its
-        subcollections, the subcollections are more specific and win, so the
-        umbrella is dropped. An umbrella on its own falls back to the first
-        subcollection listed in COLLECTION_HIERARCHY.
+        subcollections, the more specific subcollections are given preference, so the
+        umbrella is dropped. 
+        If an umbrella is present on its own, it is kept and ranked as its own collection.
 
         :param collections: List of normalized collection names
         :return: List of collection names with umbrellas resolved
@@ -521,18 +521,10 @@ class ADSBoostCelery(ADSCelery):
         resolved = list(collections)
 
         for umbrella, children in hierarchy.items():
-            if umbrella not in resolved:
-                continue
-
-            resolved.remove(umbrella)
-            if any(child in resolved for child in children):
-                # A more specific collection is present, so the umbrella adds
-                # nothing; drop it.
-                logger.debug(f"Dropping umbrella collection '{umbrella}' in favour of "
-                             f"{[c for c in children if c in resolved]}")
-            elif children:
-                # Umbrella on its own; fall back to its primary subcollection
-                resolved.append(children[0])
+            present = [child for child in children if child in resolved]
+            if umbrella in resolved and present:
+                resolved.remove(umbrella)
+                logger.debug(f"Dropping umbrella collection '{umbrella}' in favour of {present}")
 
         return resolved
 
