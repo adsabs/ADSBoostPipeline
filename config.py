@@ -74,55 +74,79 @@ BOOST_WEIGHTS = {
 }
 
 
-# Collection rankings for determining relative relevance weights
-# Each collection defines how relevant other collections are to it using integer ranks
-# Rank 1 = highest relevance, higher numbers = lower relevance
-# None = no relevance (will get score of 0)
+# Collection rankings: how much of a record's boost_factor survives in each
+# discipline's search.
+#
+# Outer key = the search discipline (one *_final_boost per discipline; must match
+# COLLECTIONS). Inner key = a collection the record belongs to. A record in
+# several collections takes the best (lowest) rank among them.
+#
+# Rank 1 = highest relevance. Ranks are turned into weights evenly spaced from
+# 1.0 down to 0.1 across ALL the distinct rank values used anywhere in this
+# table, not a fixed scale. With ranks 1-6 in use: 1=1.00, 2=0.82, 3=0.64,
+# 4=0.46, 5=0.28, 6=0.10. Adding a new rank value (e.g. 7) or dropping the last
+# use of one changes every step.
+#
+# A rank of None, or a collection a discipline does not list, gives a weight
+# of 0 in that discipline's search. A 0 final boost therefore means a record's
+# collections are missing from this table.
+#
+# 'astronomy' is ranked as its own collection: it covers records whose only
+# space-science label is the 'astronomy' umbrella (see COLLECTION_HIERARCHY).
+# Its ranks are currently seeded with the 'astrophysics' values, which keeps
+# results identical to the old behaviour (astronomy-only -> astrophysics) until
+# the project scientists' rankings are filled in.
 
 COLLECTION_RANKINGS = {
     'astrophysics': {
-        'astrophysics': 1,           # Highest relevance
+        'astrophysics': 1,
+        'astronomy': 1,
         'planetary': 4,
         'physics': 2,
         'heliophysics': 4,
         'general': 3,
-        'earthscience': 6     # No relevance
+        'earthscience': 6
     },
     'physics': {
-        'physics': 1,             # Highest relevance
+        'physics': 1,
         'astrophysics': 3,
+        'astronomy': 3,
         'planetary': 3,
         'heliophysics': 3,
         'general': 2,
-        'earthscience': 3     # No relevance
+        'earthscience': 3
     },
     'earthscience': {
-        'earthscience': 1,       # Highest relevance
+        'earthscience': 1,
         'planetary': 4,
         'general': 2,
         'astrophysics': 6,
+        'astronomy': 6,
         'physics': 3,
-        'heliophysics': 5      # No relevance
+        'heliophysics': 5
     },
     'planetary': {
-        'planetary': 1,   # Highest relevance
+        'planetary': 1,
         'astrophysics': 5,
+        'astronomy': 5,
         'earthscience': 4,
         'physics': 2,
         'heliophysics': 2,
         'general': 3
     },
     'heliophysics': {
-        'heliophysics': 1,        # Highest relevance
+        'heliophysics': 1,
         'astrophysics': 6,
+        'astronomy': 6,
         'physics': 2,
         'planetary': 3,
         'general': 2,
-        'earthscience': 4     # No relevance
+        'earthscience': 4
     },
     'general': {
-        'general': 1,             # Highest relevance
+        'general': 1,
         'astrophysics': 1,
+        'astronomy': 1,
         'physics': 1,
         'planetary': 1,
         'earthscience': 1,
@@ -130,10 +154,11 @@ COLLECTION_RANKINGS = {
     }
 }
 
-# Collection hierarchy: 'astronomy' is an umbrella that encompasses these more
-# specific collections. When a record carries the umbrella AND one or more of its
-# subcollections, the subcollections win and the umbrella is dropped. An umbrella
-# on its own falls back to the first subcollection listed.
+# Collection hierarchy: 'astronomy' is an umbrella (the old "space science" big
+# tent) that encompasses these more specific collections. When a record carries
+# the umbrella AND one or more of its subcollections, the subcollections are
+# more specific and win, so the umbrella is dropped. An umbrella on its own is
+# kept and ranked as its own collection in COLLECTION_RANKINGS.
 COLLECTION_HIERARCHY = {
     'astronomy': ['astrophysics', 'heliophysics', 'planetary']
 }

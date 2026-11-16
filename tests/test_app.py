@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import pytest
 import json
 import os
@@ -249,11 +250,53 @@ class TestAppFunctions:
             assert isinstance(weights[field], (int, float)), f"Weight {field} should be numeric"
             assert 0 <= weights[field] <= 1, f"Weight {field} should be between 0 and 1"
         
-        # For an astronomy record (mapped to astrophysics), the weights represent how relevant each discipline is to astrophysics
-        # Based on COLLECTION_RANKINGS, astrophysics should have weight 1.0 (rank 1) and physics should have weight 0.64 (rank 3)
-        assert weights['astrophysics_weight'] == 1.0, f"Expected astrophysics_weight=1.0, got {weights['astrophysics_weight']}"
-        assert weights['physics_weight'] == 0.64, f"Expected physics_weight=0.64, got {weights['physics_weight']}"
-    
+        # An astronomy-only record is ranked as 'astronomy' in every discipline
+        rankings = app.config['COLLECTION_RANKINGS']
+        ranks = sorted({r for d in rankings.values() for r in d.values() if r is not None})
+        rank_to_weight = {r: 1.0 - 0.9 * i / (len(ranks) - 1) for i, r in enumerate(ranks)}
+        for discipline in app.config['COLLECTIONS']:
+            expected = rank_to_weight[rankings[discipline]['astronomy']]
+            assert weights[f'{discipline}_weight'] == pytest.approx(expected), \
+                f"astronomy-only record in {discipline} search: expected {expected}, got {weights[f'{discipline}_weight']}"
+
+    def test_resolve_collection_hierarchy(self, app):
+        """The astronomy umbrella is dropped next to a subcollection and kept on its own"""
+        resolve = app._resolve_collection_hierarchy
+        assert resolve(['astronomy']) == ['astronomy']
+        assert resolve(['astronomy', 'physics']) == ['astronomy', 'physics']
+        assert resolve(['astronomy', 'heliophysics']) == ['heliophysics']
+        assert resolve(['planetary', 'astronomy']) == ['planetary']
+        assert resolve(['astronomy', 'astrophysics', 'heliophysics']) == ['astrophysics', 'heliophysics']
+        assert resolve(['physics', 'general']) == ['physics', 'general']
+        assert resolve([]) == []
+
+    def test_astronomy_ranked_independently_of_astrophysics(self, app):
+        """Changing astronomy's ranks changes astronomy-only records, not astrophysics-labelled ones"""
+        cfg = copy.deepcopy(dict(app.config))
+        rankings = cfg['COLLECTION_RANKINGS']
+        rankings['astrophysics']['astronomy'] = 4   # 0.46 with ranks 1-6 in use
+        rankings['heliophysics']['astronomy'] = 2   # 0.82
+        app.config = cfg
+
+        astronomy_only = app.compute_collection_weights({'bib_data': {'database': ['astronomy']}})
+        assert astronomy_only['astrophysics_weight'] == pytest.approx(0.46)
+        assert astronomy_only['heliophysics_weight'] == pytest.approx(0.82)
+
+        # Astrophysics-labelled records keep the astrophysics ranks, and the
+        # umbrella is dropped so astronomy's better heliophysics rank does not
+        # leak onto them
+        labelled = app.compute_collection_weights({
+            'classifications': ['astrophysics'],
+            'bib_data': {'database': ['astronomy']}
+        })
+        assert labelled['astrophysics_weight'] == pytest.approx(1.0)
+        assert labelled['heliophysics_weight'] == pytest.approx(0.1)
+
+        # Astronomy plus a non-space-science collection takes the best of both
+        with_physics = app.compute_collection_weights({'bib_data': {'database': ['astronomy', 'physics']}})
+        assert with_physics['astrophysics_weight'] == pytest.approx(0.82)  # physics is rank 2 in astrophysics
+        assert with_physics['physics_weight'] == pytest.approx(1.0)
+
     def test_compute_final_boost(self, app):
         """Test final boost computation using ALL test records"""
         test_files = self.get_test_files()
