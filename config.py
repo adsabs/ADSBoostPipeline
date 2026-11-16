@@ -93,65 +93,53 @@ BOOST_WEIGHTS = {
 #
 # 'astronomy' is ranked as its own collection: it covers records whose only
 # space-science label is the 'astronomy' umbrella (see COLLECTION_HIERARCHY).
-# Its ranks are currently seeded with the 'astrophysics' values, which keeps
-# results identical to the old behaviour (astronomy-only -> astrophysics) until
-# the project scientists' rankings are filled in.
 
 COLLECTION_RANKINGS = {
     'astrophysics': {
-        'astrophysics': 1,
-        'astronomy': 1,
-        'planetary': 4,
-        'physics': 2,
-        'heliophysics': 4,
-        'general': 3,
-        'earthscience': 6
-    },
-    'physics': {
-        'physics': 1,
-        'astrophysics': 3,
-        'astronomy': 3,
-        'planetary': 3,
-        'heliophysics': 3,
-        'general': 2,
-        'earthscience': 3
-    },
-    'earthscience': {
-        'earthscience': 1,
-        'planetary': 4,
-        'general': 2,
-        'astrophysics': 6,
-        'astronomy': 6,
-        'physics': 3,
-        'heliophysics': 5
+        'astrophysics': 1,           # Highest relevance
+        'planetary': 2,
+	    'heliophysics': 2,
+	    'astronomy': 3,
+        'physics': 4,
+        'earthscience': 5,
+        'general': 6
     },
     'planetary': {
-        'planetary': 1,
-        'astrophysics': 5,
-        'astronomy': 5,
-        'earthscience': 4,
-        'physics': 2,
+        'planetary': 1,		# Highest relevance
+        'astrophysics': 2,
         'heliophysics': 2,
-        'general': 3
+	    'astronomy': 3,
+        'physics': 4,
+        'earthscience': 4,
+        'general': 6
     },
     'heliophysics': {
-        'heliophysics': 1,
-        'astrophysics': 6,
-        'astronomy': 6,
-        'physics': 2,
+        'heliophysics': 1,        # Highest relevance
+	    'astrophysics': 2,
+	    'planetary': 2,
+        'astronomy': 3,
+        'physics': 4,
+        'earthscience': 4,
+        'general': 6
+    },
+    'earthscience': {
+        'earthscience': 1,       # Highest relevance
+        'heliophysics': 3,
         'planetary': 3,
-        'general': 2,
-        'earthscience': 4
+        'physics': 3,
+        'astrophysics': 4,
+    	'astronomy': 5,
+        'general': 6
     },
     'general': {
         'general': 1,
+        'physics': 1,             # Highest relevance
         'astrophysics': 1,
-        'astronomy': 1,
-        'physics': 1,
         'planetary': 1,
-        'earthscience': 1,
-        'heliophysics': 1
-    }
+        'heliophysics': 1,
+        'general': 1,
+        'earthscience': 1     # No relevance
+    },
 }
 
 # Collection hierarchy: 'astronomy' is an umbrella (the old "space science" big
