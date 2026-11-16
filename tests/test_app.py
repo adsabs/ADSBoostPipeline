@@ -64,13 +64,11 @@ class TestAppFunctions:
             boost_factors = app.compute_final_boost(test_record)
             
             # Check that all required fields are present
-            required_fields = [
-                'refereed_boost', 'doctype_boost', 'recency_boost', 'boost_factor',
-                'astrophysics_weight', 'physics_weight', 'earthscience_weight',
-                'planetary_weight', 'heliophysics_weight', 'general_weight',
-                'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
-                'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost'
-            ]
+            required_fields = (
+                ['refereed_boost', 'doctype_boost', 'recency_boost', 'boost_factor']
+                + [f'{d}_weight' for d in app.config['COLLECTIONS']]
+                + [f'{d}_final_boost' for d in app.config['COLLECTIONS']]
+            )
             
             for field in required_fields:
                 assert field in boost_factors, f"Missing field: {field} in {test_case['name']}"
@@ -224,10 +222,7 @@ class TestAppFunctions:
             # Test with actual test data
             weights = app.compute_collection_weights(test_record)
             
-            required_weight_fields = [
-                'astrophysics_weight', 'physics_weight', 'earthscience_weight',
-                'planetary_weight', 'heliophysics_weight', 'general_weight'
-            ]
+            required_weight_fields = [f'{d}_weight' for d in app.config['COLLECTIONS']]
             
             for field in required_weight_fields:
                 assert field in weights, f"Missing weight field: {field} in {test_case['name']}"
@@ -271,16 +266,27 @@ class TestAppFunctions:
         assert resolve([]) == []
 
     def test_astronomy_ranked_independently_of_astrophysics(self, app):
-        """Changing astronomy's ranks changes astronomy-only records, not astrophysics-labelled ones"""
+        """Astronomy's ranks move astronomy-only records, not astrophysics-labelled ones.
+
+        Uses its own ranking table so the shipped rankings can change freely.
+        Ranks 1-6 are in use, so 1=1.00, 2=0.82, 3=0.64, 4=0.46, 5=0.28, 6=0.10.
+        """
         cfg = copy.deepcopy(dict(app.config))
-        rankings = cfg['COLLECTION_RANKINGS']
-        rankings['astrophysics']['astronomy'] = 4   # 0.46 with ranks 1-6 in use
-        rankings['heliophysics']['astronomy'] = 2   # 0.82
+        cfg['COLLECTIONS'] = ['astrophysics', 'heliophysics', 'general']
+        cfg['COLLECTION_RANKINGS'] = {
+            'astrophysics': {'astrophysics': 1, 'physics': 2, 'general': 3, 'astronomy': 4,
+                             'planetary': 5, 'heliophysics': 6, 'earthscience': 6},
+            'heliophysics': {'heliophysics': 1, 'astronomy': 2, 'physics': 3, 'planetary': 3,
+                             'general': 3, 'earthscience': 5, 'astrophysics': 6},
+            'general': {c: 1 for c in ('astrophysics', 'astronomy', 'heliophysics', 'planetary',
+                                       'physics', 'earthscience', 'general')},
+        }
         app.config = cfg
 
         astronomy_only = app.compute_collection_weights({'bib_data': {'database': ['astronomy']}})
         assert astronomy_only['astrophysics_weight'] == pytest.approx(0.46)
         assert astronomy_only['heliophysics_weight'] == pytest.approx(0.82)
+        assert astronomy_only['general_weight'] == pytest.approx(1.0)
 
         # Astrophysics-labelled records keep the astrophysics ranks, and the
         # umbrella is dropped so astronomy's better heliophysics rank does not
@@ -292,10 +298,12 @@ class TestAppFunctions:
         assert labelled['astrophysics_weight'] == pytest.approx(1.0)
         assert labelled['heliophysics_weight'] == pytest.approx(0.1)
 
-        # Astronomy plus a non-space-science collection takes the best of both
+        # Astronomy plus physics takes the best of both in each discipline.
+        # Physics is a collection, not a discipline, so it gets no weight of its own.
         with_physics = app.compute_collection_weights({'bib_data': {'database': ['astronomy', 'physics']}})
-        assert with_physics['astrophysics_weight'] == pytest.approx(0.82)  # physics is rank 2 in astrophysics
-        assert with_physics['physics_weight'] == pytest.approx(1.0)
+        assert with_physics['astrophysics_weight'] == pytest.approx(0.82)  # physics rank 2 beats astronomy rank 4
+        assert with_physics['heliophysics_weight'] == pytest.approx(0.82)  # astronomy rank 2 beats physics rank 3
+        assert 'physics_weight' not in with_physics
 
     def test_compute_final_boost(self, app):
         """Test final boost computation using ALL test records"""
@@ -313,10 +321,7 @@ class TestAppFunctions:
             # Test with actual test data
             final_boosts = app.compute_final_boost(test_record)
             
-            required_final_fields = [
-                'astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
-                'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost'
-            ]
+            required_final_fields = [f'{d}_final_boost' for d in app.config['COLLECTIONS']]
             
             for field in required_final_fields:
                 assert field in final_boosts, f"Missing final boost field: {field} in {test_case['name']}"
@@ -391,8 +396,7 @@ class TestAppFunctions:
             
             # Compare collection weights
             logger.info("  Collection Weights:")
-            for field in ['astrophysics_weight', 'physics_weight', 'earthscience_weight', 
-                         'planetary_weight', 'heliophysics_weight', 'general_weight']:
+            for field in [f'{d}_weight' for d in app.config['COLLECTIONS']]:
                 expected = expected_output[field]
                 actual = actual_output[field]
                 assert abs(actual - expected) < 0.001, f"{field}: expected {expected}, got {actual}"
@@ -400,8 +404,7 @@ class TestAppFunctions:
             
             # Compare final discipline boosts
             logger.info("  Final Discipline Boosts:")
-            for field in ['astrophysics_final_boost', 'physics_final_boost', 'earthscience_final_boost',
-                         'planetary_final_boost', 'heliophysics_final_boost', 'general_final_boost']:
+            for field in [f'{d}_final_boost' for d in app.config['COLLECTIONS']]:
                 expected = expected_output[field]
                 actual = actual_output[field]
                 assert abs(actual - expected) < 0.001, f"{field}: expected {expected}, got {actual}"

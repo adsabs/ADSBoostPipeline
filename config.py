@@ -133,13 +133,22 @@ COLLECTION_RANKINGS = {
     },
     'general': {
         'general': 1,
-        'physics': 1,             # Highest relevance
+        'physics': 1,
         'astrophysics': 1,
+        'astronomy': 1,
         'planetary': 1,
         'heliophysics': 1,
-        'general': 1,
-        'earthscience': 1     # No relevance
+        'earthscience': 1
     },
+    'physics': {
+        'physics': 1,
+        'heliophysics': 2,
+        'astrophysics': 2,
+        'planetary': 3,
+        'astronomy': 4,
+        'earthscience': 5,
+        'general': 6
+    }
 }
 
 # Collection hierarchy: 'astronomy' is an umbrella (the old "space science" big
@@ -161,7 +170,9 @@ COLLECTION_ALIASES = {
 # Citation distribution update frequency (in days)
 CITATION_DISTRIBUTION_UPDATE_FREQUENCY = 90  # Quarterly updates
 
-# Collections for citation boost calculations
+# Disciplines a *_weight / *_final_boost is computed for. Each needs an entry in
+# COLLECTION_RANKINGS. 'physics' is not in the search dropdown, but
+# physics_final_boost is still computed and sent to Master / Solr.
 COLLECTIONS = ['astrophysics', 'physics', 'earthscience', 'planetary', 'heliophysics', 'general']
 
 # Columns written from a boost_factors dict, in BoostFactors model-attribute order.
